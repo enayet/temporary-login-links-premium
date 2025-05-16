@@ -1,1 +1,603 @@
-/* CSS for tlp-public.css */
+/**
+ * Public CSS for Temporary Login Links Premium.
+ *
+ * This file includes styles for the public-facing functionality of the plugin,
+ * including the custom login page, shortcodes, and notification messages.
+ *
+ * @package    Temporary_Login_Links_Premium
+ * @subpackage Temporary_Login_Links_Premium/public/css
+ */
+
+/* General Styles */
+.tlp-message {
+    margin: 15px 0;
+    padding: 10px 15px;
+    border-radius: 4px;
+}
+
+.tlp-success {
+    background-color: #dff2e0;
+    color: #2a8b32;
+    border: 1px solid #c0e9c2;
+}
+
+.tlp-error {
+    background-color: #fbe9e7;
+    color: #c62828;
+    border: 1px solid #f5c1bb;
+}
+
+.tlp-notice {
+    background-color: #e8f4fd;
+    color: #0277bd;
+    border: 1px solid #c2e4fc;
+}
+
+.tlp-status {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.tlp-status-active {
+    background-color: #dff2e0;
+    color: #2a8b32;
+}
+
+.tlp-status-inactive {
+    background-color: #f1f1f1;
+    color: #777;
+}
+
+.tlp-status-expired {
+    background-color: #fbe9e7;
+    color: #c62828;
+}
+
+/* Branded Login Page Styles */
+body.login .tlp-welcome-message {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 15px 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.5;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+body.login .tlp-login-message {
+    margin-bottom: 20px;
+}
+
+body.login .tlp-status-message {
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+body.login .tlp-expiry-info {
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+body.login .tlp-loading-indicator {
+    text-align: center;
+    padding: 10px;
+    margin-top: 15px;
+    color: #777;
+    font-style: italic;
+}
+
+/* Override WordPress login styles for temporary login */
+body.login.temporary-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+body.login.temporary-login #login {
+    padding: 40px 0;
+    width: 100%;
+    max-width: 360px;
+}
+
+body.login.temporary-login #loginform {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    padding: 30px;
+}
+
+body.login.temporary-login .button.button-primary {
+    width: 100%;
+    text-align: center;
+    padding: 8px 12px;
+    height: auto;
+    line-height: 1.5;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+body.login.temporary-login .button.button-primary:hover,
+body.login.temporary-login .button.button-primary:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Shortcode: temporary_login_link */
+.tlp-shortcode-form {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tlp-form-field {
+    margin-bottom: 15px;
+}
+
+.tlp-form-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.tlp-form-field label .required {
+    color: #c62828;
+}
+
+.tlp-form-field input[type="text"],
+.tlp-form-field input[type="email"],
+.tlp-form-field input[type="password"],
+.tlp-form-field select,
+.tlp-form-field textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.tlp-form-field input[type="text"]:focus,
+.tlp-form-field input[type="email"]:focus,
+.tlp-form-field input[type="password"]:focus,
+.tlp-form-field select:focus,
+.tlp-form-field textarea:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: 2px solid transparent;
+}
+
+.tlp-form-submit {
+    margin-top: 20px;
+}
+
+.tlp-form-submit input[type="submit"] {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.tlp-link-url {
+    background: #f7f7f7;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.tlp-link-input {
+    flex: 1;
+    padding: 8px 12px;
+    font-family: monospace;
+    font-size: 13px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    margin-right: 10px;
+}
+
+.tlp-copy-link {
+    padding: 8px 15px;
+    background: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.tlp-copy-link:hover,
+.tlp-copy-link:focus {
+    background: #005f8b;
+}
+
+/* Shortcode: temporary_login_form */
+.tlp-shortcode-login-form {
+    max-width: 400px;
+    margin: 30px auto;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 25px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.tlp-form-message {
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 16px;
+}
+
+/* Shortcode: temporary_login_info */
+.tlp-user-info {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tlp-info-heading {
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 18px;
+    color: #23282d;
+}
+
+.tlp-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tlp-info-list li {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.tlp-info-list li:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.tlp-info-list strong {
+    display: inline-block;
+    min-width: 120px;
+    font-weight: 600;
+}
+
+.tlp-info-expiry .tlp-status {
+    margin-left: 5px;
+}
+
+.tlp-expiry-date {
+    display: inline-block;
+}
+
+.tlp-expiry-date.tlp-expired {
+    color: #c62828;
+    font-weight: 500;
+}
+
+.tlp-remaining-time {
+    color: #0073aa;
+    font-size: 0.9em;
+}
+
+/* Shortcode: temporary_links_list */
+.tlp-links-list {
+    margin: 20px 0;
+}
+
+.tlp-links-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tlp-links-table th,
+.tlp-links-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.tlp-links-table thead th {
+    background: #f7f7f7;
+    font-weight: 600;
+    color: #23282d;
+}
+
+.tlp-links-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.tlp-links-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tlp-links-table .button {
+    margin-right: 5px;
+}
+
+.tlp-links-table .button:last-child {
+    margin-right: 0;
+}
+
+/* Responsive styles */
+@media only screen and (max-width: 782px) {
+    .tlp-links-table,
+    .tlp-links-table thead,
+    .tlp-links-table tbody,
+    .tlp-links-table th,
+    .tlp-links-table td,
+    .tlp-links-table tr {
+        display: block;
+    }
+    
+    .tlp-links-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .tlp-links-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+    }
+    
+    .tlp-links-table td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 40%;
+        min-height: 30px;
+    }
+    
+    .tlp-links-table td:last-child {
+        border-bottom: 0;
+    }
+    
+    .tlp-links-table td:before {
+        position: absolute;
+        top: 12px;
+        left: 15px;
+        width: 35%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+    
+    .tlp-links-table td:nth-of-type(1):before { content: "Email"; }
+    .tlp-links-table td:nth-of-type(2):before { content: "Role"; }
+    .tlp-links-table td:nth-of-type(3):before { content: "Expiry"; }
+    .tlp-links-table td:nth-of-type(4):before { content: "Status"; }
+    .tlp-links-table td:nth-of-type(5):before { content: "Actions"; }
+    
+    .tlp-user-info .tlp-info-list strong {
+        display: block;
+        margin-bottom: 5px;
+    }
+    
+    .tlp-info-list .tlp-status {
+        margin-left: 0;
+        margin-top: 5px;
+        display: inline-block;
+    }
+}
+
+/* Animations and transitions */
+.tlp-status,
+.tlp-copy-link,
+.button.button-primary,
+.tlp-form-field input[type="text"],
+.tlp-form-field input[type="email"],
+.tlp-form-field input[type="password"],
+.tlp-form-field select,
+.tlp-form-field textarea {
+    transition: all 0.2s ease;
+}
+
+/* Temporary login link animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tlp-message,
+.tlp-link-url,
+.tlp-login-message {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading indicator animation */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.tlp-loading-indicator {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Custom styling for themes */
+.entry-content .tlp-shortcode-form,
+.entry-content .tlp-shortcode-login-form,
+.entry-content .tlp-user-info,
+.entry-content .tlp-links-list {
+    margin-bottom: 30px;
+}
+
+.site-content .tlp-shortcode-form,
+.site-content .tlp-shortcode-login-form,
+.site-content .tlp-user-info,
+.site-content .tlp-links-list {
+    margin-bottom: 30px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .tlp-shortcode-form,
+    .tlp-shortcode-login-form,
+    .tlp-user-info,
+    .tlp-links-table {
+        background: #2c2c2c;
+        border-color: #3c3c3c;
+        color: #f0f0f0;
+    }
+    
+    .tlp-form-field input[type="text"],
+    .tlp-form-field input[type="email"],
+    .tlp-form-field input[type="password"],
+    .tlp-form-field select,
+    .tlp-form-field textarea,
+    .tlp-link-input {
+        background: #383838;
+        border-color: #4c4c4c;
+        color: #f0f0f0;
+    }
+    
+    .tlp-form-field input[type="text"]:focus,
+    .tlp-form-field input[type="email"]:focus,
+    .tlp-form-field input[type="password"]:focus,
+    .tlp-form-field select:focus,
+    .tlp-form-field textarea:focus {
+        border-color: #0073aa;
+        box-shadow: 0 0 0 1px #0073aa;
+    }
+    
+    .tlp-links-table th {
+        background: #383838;
+        color: #f0f0f0;
+    }
+    
+    .tlp-links-table td {
+        border-color: #3c3c3c;
+    }
+    
+    .tlp-links-table tbody tr:hover {
+        background-color: #383838;
+    }
+    
+    .tlp-info-list li {
+        border-color: #3c3c3c;
+    }
+    
+    .tlp-link-url {
+        background: #383838;
+        border-color: #4c4c4c;
+    }
+    
+    .tlp-status-active {
+        background-color: rgba(42, 139, 50, 0.2);
+        color: #4caf50;
+    }
+    
+    .tlp-status-inactive {
+        background-color: rgba(119, 119, 119, 0.2);
+        color: #bdbdbd;
+    }
+    
+    .tlp-status-expired {
+        background-color: rgba(198, 40, 40, 0.2);
+        color: #ef5350;
+    }
+}
+
+/* RTL support */
+.rtl .tlp-form-field label {
+    text-align: right;
+}
+
+.rtl .tlp-info-list strong {
+    margin-right: 0;
+    margin-left: 10px;
+}
+
+.rtl .tlp-links-table th,
+.rtl .tlp-links-table td {
+    text-align: right;
+}
+
+.rtl .tlp-status {
+    margin-right: 0;
+    margin-left: 5px;
+}
+
+.rtl .tlp-link-input {
+    margin-right: 0;
+    margin-left: 10px;
+}
+
+/* Accessibility improvements */
+.tlp-form-field input[type="text"]:focus,
+.tlp-form-field input[type="email"]:focus,
+.tlp-form-field input[type="password"]:focus,
+.tlp-form-field select:focus,
+.tlp-form-field textarea:focus,
+.tlp-copy-link:focus,
+.button.button-primary:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 1px;
+}
+
+.screen-reader-text {
+    border: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    word-wrap: normal !important;
+}
+
+.screen-reader-text:focus {
+    background-color: #f1f1f1;
+    border-radius: 3px;
+    box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.6);
+    clip: auto !important;
+    clip-path: none;
+    color: #0073aa;
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    height: auto;
+    left: 5px;
+    line-height: normal;
+    padding: 15px 23px 14px;
+    text-decoration: none;
+    top: 5px;
+    width: auto;
+    z-index: 100000;
+}
