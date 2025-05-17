@@ -968,13 +968,17 @@ class TLP_Links {
         $results = $wpdb->get_results( $prepared_sql, ARRAY_A );
         
         // Count total items
+
         $count_sql = "SELECT COUNT(*) FROM {$this->table_name}";
         
-        if ( ! empty( $where ) ) {
-            $count_sql .= ' WHERE ' . implode( ' AND ', $where );
-        }
-        
-        $total_items = $wpdb->get_var( $wpdb->prepare( $count_sql, array_slice( $values, 0, count( $values ) - 2 ) ) );
+        if (!empty($where)) {
+            $count_sql .= ' WHERE ' . implode(' AND ', $where);
+            $total_items = $wpdb->get_var($wpdb->prepare($count_sql, array_slice($values, 0, count($values) - 2)));
+        } else {
+            // No prepare needed if there are no placeholders
+            $total_items = $wpdb->get_var($count_sql);
+        }        
+         
         
         return array(
             'items'       => $results,

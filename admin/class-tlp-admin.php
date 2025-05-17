@@ -579,7 +579,7 @@ class TLP_Admin {
         $this->display_admin_notices();
         
         // Load template
-        //include plugin_dir_path(__FILE__) . 'partials/links-list.php';
+        include plugin_dir_path(__FILE__) . 'partials/links-list.php';
     }
 
     /**
