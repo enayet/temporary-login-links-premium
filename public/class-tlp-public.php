@@ -57,6 +57,7 @@ class TLP_Public {
      */
     private $security;
 
+
     /**
      * Initialize the class and set its properties.
      *
@@ -118,11 +119,14 @@ class TLP_Public {
         // Intercept login page for temporary login links
         add_action('login_init', array($this, 'process_temporary_login'));
         
+        // Load branded login page template
+        add_action('login_init', array($this, 'maybe_load_branded_login'));        
+        
         // Customize the login page with branding
         add_action('login_head', array($this, 'customize_login_page'));
         add_action('login_header', array($this, 'add_welcome_message'));
         add_action('login_enqueue_scripts', array($this, 'enqueue_branding_styles'));
-        
+                
         // Add custom login form
         add_filter('login_message', array($this, 'add_temporary_login_message'));
         
@@ -135,29 +139,72 @@ class TLP_Public {
      * Process temporary login links.
      *
      * @since    1.0.0
-     */
+     */    
+    
     public function process_temporary_login() {
         // Only process if the temp_login parameter is present
         if (!isset($_GET['temp_login'])) {
             return;
         }
-        
+
         // Get the token
         $token = sanitize_text_field($_GET['temp_login']);
-        
-        // Validate the token
-        $result = $this->links->validate_login_token($token);
-        
-        // Check if validation was successful
-        if (is_wp_error($result)) {
-            // Show error message
-            $this->show_login_error($result->get_error_message());
+
+        // Check if this is an auto-login request or if branding is disabled
+        $auto_login = isset($_GET['auto']) && $_GET['auto'] == '1';
+
+        // Get branding settings
+        $branding = get_option('temporary_login_links_premium_branding', array());
+        $branding_enabled = !empty($branding['enable_branding']) && $branding['enable_branding'] == 1;
+
+        // If branding is disabled or auto-login is requested, proceed with login
+        if (!$branding_enabled || $auto_login) {
+            // Validate the token
+            $result = $this->links->validate_login_token($token);
+
+            // Check if validation was successful
+            if (is_wp_error($result)) {
+                // Show error message
+                $this->show_login_error($result->get_error_message());
+                return;
+            }
+
+            // Log in the user
+            $this->login_user($result['user_id'], $result['redirect_to']);
+        }
+
+        // If branding is enabled and not auto-login, the branded login page will be loaded
+        // This is handled in branded-login.php which is included via the hook
+    }
+    
+    /**
+     * Maybe load the branded login page template.
+     *
+     * @since    1.0.0
+     */
+    public function maybe_load_branded_login() {
+        // Only process if this is a temporary login page
+        if (!isset($_GET['temp_login'])) {
             return;
         }
-        
-        // Log in the user
-        $this->login_user($result['user_id'], $result['redirect_to']);
-    }
+
+        // Check if this is an auto-login request
+        $auto_login = isset($_GET['auto']) && $_GET['auto'] == '1';
+        if ($auto_login) {
+            return;
+        }
+
+        // Get branding settings
+        $branding = get_option('temporary_login_links_premium_branding', array());
+        $branding_enabled = !empty($branding['enable_branding']) && $branding['enable_branding'] == 1;
+
+        // If branding is enabled, load the branded login page
+        if ($branding_enabled) {
+            require_once plugin_dir_path(__FILE__) . 'partials/branded-login.php';
+            // The exit is in the branded-login.php file
+        }
+    }    
+    
 
     /**
      * Show login error message.

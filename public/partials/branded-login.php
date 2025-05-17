@@ -25,13 +25,8 @@ if (empty($token)) {
     return;
 }
 
-// Get branding settings
-$branding = get_option('temporary_login_links_premium_branding', array());
-
-// Check if branding is enabled
-if (empty($branding['enable_branding']) || $branding['enable_branding'] != 1) {
-    return;
-}
+// Check if auto login is specified
+$auto_login = isset($_GET['auto']) && $_GET['auto'] == '1';
 
 // Get link details
 global $wpdb;
@@ -41,8 +36,33 @@ $link = $wpdb->get_row(
     $wpdb->prepare(
         "SELECT * FROM $table_name WHERE link_token = %s LIMIT 1",
         $token
-    )
+    ),
+    ARRAY_A
 );
+
+if (!$link) {
+    // Invalid token, let the normal login process handle it
+    return;
+}
+
+// Get branding settings
+$branding = get_option('temporary_login_links_premium_branding', array());
+
+// Check if branding is enabled
+if (empty($branding['enable_branding']) || $branding['enable_branding'] != 1) {
+    // If auto login is specified, proceed with auto login
+    if ($auto_login) {
+        return;
+    }
+    
+    // Otherwise, display the default login form
+    return;
+}
+
+// Check link status
+$is_active = !empty($link['is_active']);
+$is_expired = strtotime($link['expiry']) < time();
+$is_max_accesses = $link['max_accesses'] > 0 && $link['access_count'] >= $link['max_accesses'];
 
 // Default values
 $company_name = isset($branding['company_name']) ? $branding['company_name'] : get_bloginfo('name');
@@ -54,251 +74,9 @@ $button_color = isset($branding['login_button_color']) ? $branding['login_button
 $button_text_color = isset($branding['login_button_text_color']) ? $branding['login_button_text_color'] : '#ffffff';
 $logo_url = isset($branding['login_logo']) ? $branding['login_logo'] : '';
 $custom_css = isset($branding['login_custom_css']) ? $branding['login_custom_css'] : '';
-?>
 
-<style type="text/css">
-    /* Custom branding styles */
-    body.login {
-        background-color: <?php echo esc_attr($background_color); ?>;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-        line-height: 1.5;
-    }
-    
-    /* Logo */
-    body.login h1 a {
-        <?php if (!empty($logo_url)) : ?>
-        background-image: url(<?php echo esc_url($logo_url); ?>);
-        background-size: contain;
-        background-position: center center;
-        width: 320px;
-        height: 80px;
-        <?php else : ?>
-        background-image: none;
-        width: auto;
-        height: auto;
-        text-indent: 0;
-        <?php endif; ?>
-        margin: 0 auto 30px;
-        padding: 0;
-    }
-    
-    <?php if (empty($logo_url)) : ?>
-    body.login h1 a:before {
-        content: "<?php echo esc_attr($company_name); ?>";
-        font-size: 24px;
-        font-weight: 600;
-        color: <?php echo esc_attr($form_text_color); ?>;
-        display: block;
-        text-align: center;
-    }
-    <?php endif; ?>
-    
-    /* Form */
-    body.login #loginform {
-        background-color: <?php echo esc_attr($form_background); ?>;
-        color: <?php echo esc_attr($form_text_color); ?>;
-        border: none;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-        border-radius: 4px;
-        padding: 30px;
-    }
-    
-    body.login label {
-        color: <?php echo esc_attr($form_text_color); ?>;
-        font-size: 14px;
-        font-weight: 500;
-    }
-    
-    body.login input[type="text"],
-    body.login input[type="password"] {
-        background-color: <?php echo esc_attr($this->adjust_brightness($form_background, -5)); ?>;
-        border: 1px solid <?php echo esc_attr($this->adjust_brightness($form_background, -10)); ?>;
-        color: <?php echo esc_attr($form_text_color); ?>;
-        border-radius: 4px;
-        padding: 10px 12px;
-        font-size: 16px;
-        box-shadow: none;
-    }
-    
-    body.login input[type="text"]:focus,
-    body.login input[type="password"]:focus {
-        border-color: <?php echo esc_attr($button_color); ?>;
-        box-shadow: 0 0 0 1px <?php echo esc_attr($button_color); ?>;
-    }
-    
-    /* Button */
-    body.login .button.button-primary {
-        background-color: <?php echo esc_attr($button_color); ?>;
-        border-color: <?php echo esc_attr($this->adjust_brightness($button_color, -10)); ?>;
-        color: <?php echo esc_attr($button_text_color); ?>;
-        text-shadow: none;
-        box-shadow: 0 1px 0 <?php echo esc_attr($this->adjust_brightness($button_color, -15)); ?>;
-        border-radius: 4px;
-        padding: 6px 12px;
-        height: auto;
-        line-height: 1.5;
-        font-size: 14px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-    }
-    
-    body.login .button.button-primary:hover,
-    body.login .button.button-primary:focus {
-        background-color: <?php echo esc_attr($this->adjust_brightness($button_color, -10)); ?>;
-        border-color: <?php echo esc_attr($this->adjust_brightness($button_color, -15)); ?>;
-        color: <?php echo esc_attr($button_text_color); ?>;
-        box-shadow: 0 1px 0 <?php echo esc_attr($this->adjust_brightness($button_color, -20)); ?>;
-    }
-    
-    /* Welcome message */
-    .tlp-welcome-message {
-        background-color: <?php echo esc_attr($this->hex_to_rgba($form_background, 0.9)); ?>;
-        color: <?php echo esc_attr($form_text_color); ?>;
-        border-radius: 4px;
-        padding: 15px 20px;
-        margin-bottom: 25px;
-        text-align: center;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        font-size: 16px;
-        line-height: 1.5;
-    }
-    
-    /* Status messages */
-    .tlp-login-message .tlp-status-message {
-        padding: 12px 15px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-        font-size: 14px;
-        line-height: 1.5;
-    }
-    
-    .tlp-login-message .tlp-status-active {
-        background-color: #dff2e0;
-        color: #2a8b32;
-        border: 1px solid #c0e9c2;
-    }
-    
-    .tlp-login-message .tlp-status-inactive,
-    .tlp-login-message .tlp-status-expired,
-    .tlp-login-message .tlp-status-maxed {
-        background-color: #fbe9e7;
-        color: #c62828;
-        border: 1px solid #f5c1bb;
-    }
-    
-    /* Loading indicator */
-    .tlp-loading-indicator {
-        text-align: center;
-        padding: 10px;
-        margin-top: 15px;
-        color: <?php echo esc_attr($this->adjust_brightness($form_text_color, 20)); ?>;
-        font-style: italic;
-    }
-    
-    /* Hide elements */
-    body.login.temporary-login #nav,
-    body.login.temporary-login #backtoblog {
-        display: none;
-    }
-    
-    /* Animations */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .tlp-welcome-message,
-    .tlp-login-message {
-        animation: fadeIn 0.3s ease-out;
-    }
-    
-    @keyframes pulse {
-        0% { opacity: 0.6; }
-        50% { opacity: 1; }
-        100% { opacity: 0.6; }
-    }
-    
-    .tlp-loading-indicator {
-        animation: pulse 1.5s infinite ease-in-out;
-    }
-    
-    /* Responsive adjustments */
-    @media screen and (max-width: 782px) {
-        body.login #login {
-            width: 90%;
-            max-width: 360px;
-        }
-        
-        body.login h1 a {
-            width: 100%;
-            background-size: contain;
-        }
-    }
-    
-    /* Custom CSS from settings */
-    <?php echo $custom_css; ?>
-</style>
-
-<script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add temporary-login class to body
-        document.body.classList.add('temporary-login');
-        
-        <?php if ($link && $link->is_active == 1 && strtotime($link->expiry) > time() && ($link->max_accesses == 0 || $link->access_count < $link->max_accesses)) : ?>
-        // Add auto-login functionality
-        var usernameField = document.getElementById('user_login');
-        if (usernameField) {
-            usernameField.value = '<?php echo esc_js($link->user_login); ?>';
-        }
-        
-        // Hide the password field
-        var passwordField = document.getElementById('user_pass');
-        var passwordLabel = document.querySelector('label[for="user_pass"]');
-        
-        if (passwordField && passwordLabel) {
-            passwordField.parentNode.style.display = 'none';
-            passwordLabel.style.display = 'none';
-        }
-        
-        // Hide remember me checkbox
-        var rememberMe = document.querySelector('.forgetmenot');
-        if (rememberMe) {
-            rememberMe.style.display = 'none';
-        }
-        
-        // Change submit button text
-        var submitButton = document.getElementById('wp-submit');
-        if (submitButton) {
-            submitButton.value = '<?php echo esc_js(__('Access Site', 'temporary-login-links-premium')); ?>';
-            
-            // Add loading indicator
-            var form = document.getElementById('loginform');
-            if (form) {
-                var loadingIndicator = document.createElement('div');
-                loadingIndicator.className = 'tlp-loading-indicator';
-                loadingIndicator.textContent = '<?php echo esc_js(__('Logging in automatically...', 'temporary-login-links-premium')); ?>';
-                form.appendChild(loadingIndicator);
-            }
-            
-            // Auto-submit the form
-            setTimeout(function() {
-                document.getElementById('loginform').submit();
-            }, 1500);
-        }
-        <?php endif; ?>
-    });
-</script>
-<?php
-
-/**
- * Helper function to adjust brightness of a hex color.
- *
- * @since    1.0.0
- * @param    string    $hex        The hex color.
- * @param    int       $steps      The brightness adjustment (-255 to 255).
- * @return   string                The adjusted hex color.
- */
-private function adjust_brightness($hex, $steps) {
+// Adjust brightness function
+function adjust_brightness($hex, $steps) {
     // Remove # if present
     $hex = ltrim($hex, '#');
     
@@ -316,15 +94,8 @@ private function adjust_brightness($hex, $steps) {
     return sprintf('#%02x%02x%02x', $r, $g, $b);
 }
 
-/**
- * Helper function to convert hex to rgba.
- *
- * @since    1.0.0
- * @param    string    $hex        The hex color.
- * @param    float     $alpha      The alpha value (0-1).
- * @return   string                The rgba color.
- */
-private function hex_to_rgba($hex, $alpha = 1) {
+// Convert hex to rgba function
+function hex_to_rgba($hex, $alpha = 1) {
     // Remove # if present
     $hex = ltrim($hex, '#');
     
@@ -336,4 +107,267 @@ private function hex_to_rgba($hex, $alpha = 1) {
     // Return rgba
     return "rgba($r, $g, $b, $alpha)";
 }
+
+// Get user data if link is valid
+$user_data = null;
+if ($is_active && !$is_expired && !$is_max_accesses) {
+    $user = get_user_by('id', $link['user_id']);
+    if ($user) {
+        $user_data = array(
+            'display_name' => $user->display_name,
+            'first_name' => get_user_meta($user->ID, 'first_name', true),
+            'role' => $link['role']
+        );
+    }
+}
+
+// Get role display name
+function get_role_display_name($role) {
+    global $wp_roles;
+    
+    if (!isset($wp_roles)) {
+        $wp_roles = new WP_Roles();
+    }
+    
+    return isset($wp_roles->roles[$role]) ? translate_user_role($wp_roles->roles[$role]['name']) : $role;
+}
+
+// Generate auto-login URL
+$auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
+?>
+
+<!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo esc_html($company_name); ?> - <?php _e('Temporary Access', 'temporary-login-links-premium'); ?></title>
+    <?php wp_head(); ?>
+    <style>
+        body {
+            background-color: <?php echo esc_attr($background_color); ?>;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .tlp-branded-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .tlp-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .tlp-logo {
+            max-width: 280px;
+            max-height: 100px;
+            margin: 0 auto 20px;
+        }
+        
+        .tlp-company-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: <?php echo esc_attr($form_text_color); ?>;
+            margin: 0;
+        }
+        
+        .tlp-content {
+            background-color: <?php echo esc_attr($form_background); ?>;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .tlp-welcome {
+            font-size: 16px;
+            color: <?php echo esc_attr($form_text_color); ?>;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .tlp-user-info {
+            margin-bottom: 25px;
+            color: <?php echo esc_attr($form_text_color); ?>;
+        }
+        
+        .tlp-access-info {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .tlp-access-active {
+            background-color: #dff2e0;
+            color: #2a8b32;
+            border: 1px solid #c0e9c2;
+        }
+        
+        .tlp-access-inactive {
+            background-color: #fbe9e7;
+            color: #c62828;
+            border: 1px solid #f5c1bb;
+        }
+        
+        .tlp-access-cta {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .tlp-button {
+            display: inline-block;
+            background-color: <?php echo esc_attr($button_color); ?>;
+            color: <?php echo esc_attr($button_text_color); ?>;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+        
+        .tlp-button:hover {
+            background-color: <?php echo esc_attr(adjust_brightness($button_color, -15)); ?>;
+            color: <?php echo esc_attr($button_text_color); ?>;
+        }
+        
+        .tlp-expiry-info {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+            color: <?php echo esc_attr(adjust_brightness($form_text_color, 20)); ?>;
+        }
+        
+        .tlp-footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: <?php echo esc_attr(adjust_brightness($form_text_color, 20)); ?>;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tlp-content {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        /* Custom CSS */
+        <?php echo $custom_css; ?>
+        
+        /* Responsive */
+        @media screen and (max-width: 600px) {
+            .tlp-branded-container {
+                padding: 15px;
+            }
+            
+            .tlp-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tlp-branded-container">
+        <div class="tlp-header">
+            <?php if (!empty($logo_url)) : ?>
+                <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($company_name); ?>" class="tlp-logo">
+            <?php else : ?>
+                <h1 class="tlp-company-name"><?php echo esc_html($company_name); ?></h1>
+            <?php endif; ?>
+        </div>
+        
+        <div class="tlp-content">
+            <div class="tlp-welcome">
+                <?php echo wp_kses_post($welcome_text); ?>
+            </div>
+            
+            <?php if ($user_data) : ?>
+                <div class="tlp-user-info">
+                    <p>
+                        <?php 
+                        $greeting = !empty($user_data['first_name']) 
+                            ? sprintf(__('Hello, %s!', 'temporary-login-links-premium'), esc_html($user_data['first_name'])) 
+                            : __('Hello!', 'temporary-login-links-premium');
+                        echo $greeting;
+                        ?>
+                    </p>
+                    <p>
+                        <?php printf(
+                            __('You have been granted temporary access to %s with %s privileges.', 'temporary-login-links-premium'),
+                            '<strong>' . esc_html(get_bloginfo('name')) . '</strong>',
+                            '<strong>' . esc_html(get_role_display_name($user_data['role'])) . '</strong>'
+                        ); ?>
+                    </p>
+                </div>
+                
+                <div class="tlp-access-info tlp-access-active">
+                    <p style="margin: 0;"><?php _e('Your temporary login link is valid and ready to use.', 'temporary-login-links-premium'); ?></p>
+                </div>
+                
+                <div class="tlp-access-cta">
+                    <a href="<?php echo esc_url($auto_login_url); ?>" class="tlp-button">
+                        <?php _e('Access Site', 'temporary-login-links-premium'); ?>
+                    </a>
+                </div>
+                
+                <div class="tlp-expiry-info">
+                    <?php printf(
+                        __('This link will expire on %s.', 'temporary-login-links-premium'),
+                        '<strong>' . date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($link['expiry'])) . '</strong>'
+                    ); ?>
+                    
+                    <?php if ($link['max_accesses'] > 0) : ?>
+                        <br>
+                        <?php printf(
+                            __('This link can be used %d more time(s).', 'temporary-login-links-premium'),
+                            $link['max_accesses'] - $link['access_count']
+                        ); ?>
+                    <?php endif; ?>
+                </div>
+            <?php elseif (!$is_active) : ?>
+                <div class="tlp-access-info tlp-access-inactive">
+                    <p style="margin: 0;"><?php _e('This login link has been deactivated.', 'temporary-login-links-premium'); ?></p>
+                </div>
+            <?php elseif ($is_expired) : ?>
+                <div class="tlp-access-info tlp-access-inactive">
+                    <p style="margin: 0;"><?php _e('This login link has expired.', 'temporary-login-links-premium'); ?></p>
+                </div>
+            <?php elseif ($is_max_accesses) : ?>
+                <div class="tlp-access-info tlp-access-inactive">
+                    <p style="margin: 0;"><?php _e('This login link has reached its maximum number of uses.', 'temporary-login-links-premium'); ?></p>
+                </div>
+            <?php else : ?>
+                <div class="tlp-access-info tlp-access-inactive">
+                    <p style="margin: 0;"><?php _e('There was an issue with this login link.', 'temporary-login-links-premium'); ?></p>
+                </div>
+            <?php endif; ?>
+        </div>
+        
+        <div class="tlp-footer">
+            <p><?php printf(__('&copy; %s %s', 'temporary-login-links-premium'), date('Y'), esc_html($company_name)); ?></p>
+        </div>
+    </div>
+    
+    <?php wp_footer(); ?>
+</body>
+</html>
+<?php
+// Exit to prevent default WordPress login page from loading
+exit();
 ?>

@@ -333,10 +333,23 @@ class TLP_Links {
      * @param    string    $token    The login token.
      * @return   string              The full login URL.
      */
-    public function get_login_url( $token ) {
-        $base_url = site_url( 'wp-login.php' );
-        return add_query_arg( array( 'temp_login' => $token ), $base_url );
-    }
+//    public function get_login_url( $token ) {
+//        $base_url = site_url( 'wp-login.php' );
+//        return add_query_arg( array( 'temp_login' => $token ), $base_url );
+//    }
+    
+    public function get_login_url($token, $auto = false) {
+        $base_url = site_url('wp-login.php');
+        $args = array('temp_login' => $token);
+
+        // Add auto parameter if specified
+        if ($auto) {
+            $args['auto'] = '1';
+        }
+
+        return add_query_arg($args, $base_url);
+    }    
+    
 
     /**
      * Validate a login token and perform the login if valid.
