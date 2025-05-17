@@ -1415,5 +1415,24 @@ class TLP_Admin {
         }
     }
     
+
+    /**
+     * Get the display name for a user role.
+     *
+     * @since    1.0.0
+     * @param    string    $role    The role slug.
+     * @return   string             The display name for the role.
+     */
+    private function get_role_display_name($role) {
+        global $wp_roles;
+
+        if (!isset($wp_roles)) {
+            $wp_roles = new WP_Roles();
+        }
+
+        return isset($wp_roles->roles[$role]) ? translate_user_role($wp_roles->roles[$role]['name']) : $role;
+    }    
+    
+    
 }        
         

@@ -89,7 +89,7 @@ class Temporary_Login_Links_Premium_Activator {
             KEY is_active (is_active)
         ) $charset_collate;";
         
-        // Access log table
+        // Access log table - FIX: Removed default value for TEXT column 'notes'
         $table_name_log = $wpdb->prefix . 'temporary_login_access_log';
         
         $sql_log = "CREATE TABLE $table_name_log (
@@ -99,7 +99,7 @@ class Temporary_Login_Links_Premium_Activator {
             user_agent text NOT NULL,
             accessed_at datetime NOT NULL,
             status varchar(20) NOT NULL,
-            notes text DEFAULT '',
+            notes text,
             PRIMARY KEY  (id),
             KEY link_id (link_id),
             KEY accessed_at (accessed_at)

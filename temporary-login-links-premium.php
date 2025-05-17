@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Temporary Login Links Premium ChatGPT
+ * Plugin Name:       Temporary Login Links Premium
  * Plugin URI:        https://example.com/temporary-login-links-premium
  * Description:       Create secure, branded, temporary login links with advanced controls for WordPress.
  * Version:           1.0.0
@@ -62,10 +62,7 @@ register_deactivation_hook( __FILE__, 'deactivate_temporary_login_links_premium'
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-//require TEMPORARY_LOGIN_LINKS_PREMIUM_DIR . 'includes/class-temporary-login-links-premium.php';
-require TEMPORARY_LOGIN_LINKS_PREMIUM_DIR . 'includes/class-tlp-pro.php';
-
-
+require TEMPORARY_LOGIN_LINKS_PREMIUM_DIR . 'includes/class-temporary-login-links-premium.php';
 
 /**
  * Begins execution of the plugin.
