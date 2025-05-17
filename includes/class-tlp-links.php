@@ -1100,4 +1100,69 @@ class TLP_Links {
         
         return $count;
     }
+    
+    
+    /**
+     * Update a link's expiry date directly.
+     *
+     * @since    1.0.0
+     * @param    int       $link_id    The link ID.
+     * @param    string    $new_expiry The new expiry date (YYYY-MM-DD HH:MM:SS format).
+     * @return   bool|WP_Error        Whether the link was updated or an error.
+     */
+    public function update_link_expiry($link_id, $new_expiry) {
+        global $wpdb;
+
+        // Get the link
+        $link = $this->get_link($link_id);
+
+        if (!$link) {
+            return new WP_Error('not_found', __('Link not found.', 'temporary-login-links-premium'));
+        }
+
+        // Validate date format (YYYY-MM-DD HH:MM:SS)
+        if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $new_expiry)) {
+            return new WP_Error('invalid_date', __('Invalid date format. Please use YYYY-MM-DD HH:MM:SS.', 'temporary-login-links-premium'));
+        }
+
+        // Check if date is in the future
+        if (strtotime($new_expiry) <= time()) {
+            return new WP_Error('past_date', __('The expiry date must be in the future.', 'temporary-login-links-premium'));
+        }
+
+        // Update link
+        $result = $wpdb->update(
+            $this->table_name,
+            array( 
+                'expiry'    => $new_expiry,
+                'is_active' => 1,
+            ),
+            array('id' => $link_id),
+            array('%s', '%d'),
+            array('%d')
+        );
+
+        if ($result) {
+            // Log the extension
+            $wpdb->insert(
+                $this->log_table_name,
+                array(
+                    'link_id'     => $link_id,
+                    'user_ip'     => $this->get_client_ip(),
+                    'user_agent'  => isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field($_SERVER['HTTP_USER_AGENT']) : '',
+                    'accessed_at' => current_time('mysql'),
+                    'status'      => 'extended',
+                    'notes'       => sprintf(__('Link expiry updated to %s.', 'temporary-login-links-premium'), $new_expiry),
+                ),
+                array('%d', '%s', '%s', '%s', '%s', '%s')
+            );
+
+            // Clear any caches
+            delete_transient('tlp_active_links_count');
+            delete_transient('tlp_expired_links_count');
+        }
+
+        return (bool) $result;
+    }    
+    
 }

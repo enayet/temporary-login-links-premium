@@ -1431,7 +1431,9 @@ class TLP_Admin {
         }
 
         return isset($wp_roles->roles[$role]) ? translate_user_role($wp_roles->roles[$role]['name']) : $role;
-    }    
+    } 
+    
+        
     
     
 }        
