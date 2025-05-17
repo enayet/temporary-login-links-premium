@@ -87,6 +87,7 @@ class TLP_Admin {
         $this->version = $version;
         
         $this->load_dependencies();
+
     }
 
     /**
@@ -205,7 +206,8 @@ class TLP_Admin {
      * @since    1.0.0
      */
     public function register_admin_menu() {
-        $capability = 'manage_temporary_logins';
+        //$capability = 'manage_temporary_logins';
+        $capability = 'manage_options';
         
         // Add the main menu item
         add_menu_page(
@@ -577,7 +579,7 @@ class TLP_Admin {
         $this->display_admin_notices();
         
         // Load template
-        include plugin_dir_path(__FILE__) . 'partials/links-list.php';
+        //include plugin_dir_path(__FILE__) . 'partials/links-list.php';
     }
 
     /**
@@ -585,7 +587,7 @@ class TLP_Admin {
      *
      * @since    1.0.0
      */
-    private function display_admin_notices() {
+    public function display_admin_notices() {
         if (isset($_GET['error'])) {
             $error = sanitize_text_field($_GET['error']);
             $message = '';
