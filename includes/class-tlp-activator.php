@@ -60,12 +60,12 @@ class Temporary_Login_Links_Premium_Activator {
      */
     private static function create_tables() {
         global $wpdb;
-        
+
         $charset_collate = $wpdb->get_charset_collate();
-        
+
         // Links tracking table
         $table_name = $wpdb->prefix . 'temporary_login_links';
-        
+
         $sql = "CREATE TABLE $table_name (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             link_token varchar(255) NOT NULL,
@@ -88,10 +88,10 @@ class Temporary_Login_Links_Premium_Activator {
             KEY expiry (expiry),
             KEY is_active (is_active)
         ) $charset_collate;";
-        
-        // Access log table - FIX: Removed default value for TEXT column 'notes'
+
+        // Access log table
         $table_name_log = $wpdb->prefix . 'temporary_login_access_log';
-        
+
         $sql_log = "CREATE TABLE $table_name_log (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             link_id bigint(20) NOT NULL,
@@ -104,11 +104,29 @@ class Temporary_Login_Links_Premium_Activator {
             KEY link_id (link_id),
             KEY accessed_at (accessed_at)
         ) $charset_collate;";
-        
+
+        // Security logs table
+        $table_name_security = $wpdb->prefix . 'temporary_login_security_logs';
+
+        $sql_security = "CREATE TABLE $table_name_security (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            token_fragment varchar(255) NOT NULL,
+            user_email varchar(100) DEFAULT '',
+            user_ip varchar(100) NOT NULL,
+            user_agent text NOT NULL,
+            logged_at datetime NOT NULL,
+            status varchar(20) NOT NULL,
+            reason text,
+            PRIMARY KEY  (id),
+            KEY logged_at (logged_at),
+            KEY status (status)
+        ) $charset_collate;";
+
         // Use dbDelta for database updates
-        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-        dbDelta( $sql );
-        dbDelta( $sql_log );
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        dbDelta($sql_log);
+        dbDelta($sql_security);
     }
 
     /**

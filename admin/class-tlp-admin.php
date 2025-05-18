@@ -1434,6 +1434,35 @@ class TLP_Admin {
     } 
     
         
+    /**
+     * Handle security log actions.
+     *
+     * @since    1.0.0
+     */
+    public function handle_security_log_actions() {
+        // Check if we're on the security logs page
+        if (!isset($_GET['page']) || $_GET['page'] !== 'temporary-login-links-premium-security') {
+            return;
+        }
+
+        // Check capability
+        if (!$this->security->current_user_can_manage()) {
+            return;
+        }
+
+        // Handle clear logs action
+        if (isset($_GET['action']) && $_GET['action'] === 'clear_logs' && check_admin_referer('tlp_clear_security_logs')) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'temporary_login_security_logs';
+
+            // Delete all logs
+            $wpdb->query("TRUNCATE TABLE $table_name");
+
+            // Redirect back to the security logs page
+            wp_redirect(admin_url('admin.php?page=temporary-login-links-premium-security&cleared=1'));
+            exit;
+        }
+    }    
     
     
 }        

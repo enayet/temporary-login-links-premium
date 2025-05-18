@@ -18,12 +18,19 @@ if (!defined('WPINC')) {
 }
 ?>
 
+<?php 
+// Display messages
+if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
+    echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Security logs have been cleared successfully.', 'temporary-login-links-premium') . '</p></div>';
+}
+?>
+
 <div class="wrap tlp-wrap">
     <h1><?php _e('Security Logs', 'temporary-login-links-premium'); ?></h1>
     
     <div class="tlp-security-logs">
         <div class="tlp-log-info">
-            <p><?php _e('This page shows all security-related events, including failed login attempts and suspicious activity.', 'temporary-login-links-premium'); ?></p>
+            <p><?php _e('This page shows security-related events, including failed login attempts, blocked IPs, and suspicious activity.', 'temporary-login-links-premium'); ?></p>
         </div>
         
         <?php if (empty($logs['items'])) : ?>
@@ -38,12 +45,22 @@ if (!defined('WPINC')) {
                         <input type="hidden" name="page" value="temporary-login-links-premium-security">
                         <select name="status">
                             <option value=""><?php _e('All Statuses', 'temporary-login-links-premium'); ?></option>
-                            <option value="success" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'success'); ?>><?php _e('Success', 'temporary-login-links-premium'); ?></option>
-                            <option value="failed" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'failed'); ?>><?php _e('Failed', 'temporary-login-links-premium'); ?></option>
-                            <option value="expired" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'expired'); ?>><?php _e('Expired', 'temporary-login-links-premium'); ?></option>
-                            <option value="ip_restricted" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'ip_restricted'); ?>><?php _e('IP Restricted', 'temporary-login-links-premium'); ?></option>
+                            <option value="failed" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'failed'); ?>><?php _e('Failed Attempts', 'temporary-login-links-premium'); ?></option>
+                            <option value="blocked" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'blocked'); ?>><?php _e('Blocked IPs', 'temporary-login-links-premium'); ?></option>
                         </select>
+                        
+                        <input type="text" name="search" placeholder="<?php esc_attr_e('Search logs...', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['search']) ? esc_attr($_GET['search']) : ''; ?>">
+                        
+                        <span class="tlp-date-range">
+                            <input type="text" name="start_date" id="start_date" class="tlp-datepicker" placeholder="<?php esc_attr_e('From date', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['start_date']) ? esc_attr($_GET['start_date']) : ''; ?>">
+                            <input type="text" name="end_date" id="end_date" class="tlp-datepicker" placeholder="<?php esc_attr_e('To date', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['end_date']) ? esc_attr($_GET['end_date']) : ''; ?>">
+                        </span>
+                        
                         <?php submit_button(__('Filter', 'temporary-login-links-premium'), 'action', 'filter', false); ?>
+                        
+                        <?php if (isset($_GET['status']) || isset($_GET['search']) || isset($_GET['start_date'])): ?>
+                            <a href="<?php echo esc_url(admin_url('admin.php?page=temporary-login-links-premium-security')); ?>" class="button"><?php _e('Reset', 'temporary-login-links-premium'); ?></a>
+                        <?php endif; ?>
                     </form>
                 </div>
                 
@@ -72,60 +89,46 @@ if (!defined('WPINC')) {
             <table class="wp-list-table widefat fixed striped logs-table">
                 <thead>
                     <tr>
-                        <th><?php _e('Time', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('IP Address', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('Email', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('Status', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('Notes', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('User Agent', 'temporary-login-links-premium'); ?></th>
+                        <th width="15%"><?php _e('Time', 'temporary-login-links-premium'); ?></th>
+                        <th width="12%"><?php _e('IP Address', 'temporary-login-links-premium'); ?></th>
+                        <th width="15%"><?php _e('Token', 'temporary-login-links-premium'); ?></th>
+                        <th width="15%"><?php _e('Email', 'temporary-login-links-premium'); ?></th>
+                        <th width="10%"><?php _e('Status', 'temporary-login-links-premium'); ?></th>
+                        <th width="20%"><?php _e('Reason', 'temporary-login-links-premium'); ?></th>
+                        <th width="13%"><?php _e('User Agent', 'temporary-login-links-premium'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($logs['items'] as $log) : ?>
                         <tr>
                             <td>
-                                <?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($log['accessed_at'])); ?>
+                                <?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($log['logged_at'])); ?>
                             </td>
                             <td><?php echo esc_html($log['user_ip']); ?></td>
+                            <td><?php echo esc_html($log['token_fragment']); ?></td>
                             <td>
-                                <?php if (isset($log['user_email']) && !empty($log['user_email'])) : ?>
+                                <?php if (!empty($log['user_email'])) : ?>
                                     <?php echo esc_html($log['user_email']); ?>
                                 <?php else : ?>
-                                    <em><?php _e('Not available', 'temporary-login-links-premium'); ?></em>
+                                    <em><?php _e('Unknown', 'temporary-login-links-premium'); ?></em>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <?php
                                 $status_class = '';
-                                $status_text = '';
                                 
                                 switch ($log['status']) {
-                                    case 'success':
-                                        $status_class = 'success';
-                                        $status_text = __('Success', 'temporary-login-links-premium');
-                                        break;
-                                    case 'invalid_token':
+                                    case 'failed':
                                         $status_class = 'error';
-                                        $status_text = __('Invalid Token', 'temporary-login-links-premium');
+                                        $status_text = __('Failed', 'temporary-login-links-premium');
                                         break;
-                                    case 'expired':
+                                    case 'blocked':
                                         $status_class = 'error';
-                                        $status_text = __('Expired', 'temporary-login-links-premium');
-                                        break;
-                                    case 'inactive':
-                                        $status_class = 'error';
-                                        $status_text = __('Inactive', 'temporary-login-links-premium');
-                                        break;
-                                    case 'ip_restricted':
-                                        $status_class = 'error';
-                                        $status_text = __('IP Restricted', 'temporary-login-links-premium');
-                                        break;
-                                    case 'max_accesses':
-                                        $status_class = 'error';
-                                        $status_text = __('Max Accesses', 'temporary-login-links-premium');
+                                        $status_text = __('Blocked', 'temporary-login-links-premium');
                                         break;
                                     default:
-                                        $status_text = $log['status'];
+                                        $status_class = 'info';
+                                        $status_text = ucfirst($log['status']);
                                         break;
                                 }
                                 ?>
@@ -134,11 +137,14 @@ if (!defined('WPINC')) {
                                 </span>
                             </td>
                             <td>
-                                <?php echo isset($log['notes']) ? esc_html($log['notes']) : ''; ?>
+                                <?php echo !empty($log['reason']) ? esc_html($log['reason']) : ''; ?>
                             </td>
                             <td>
                                 <span class="tlp-truncate" title="<?php echo esc_attr($log['user_agent']); ?>">
-                                    <?php echo esc_html(substr($log['user_agent'], 0, 50) . (strlen($log['user_agent']) > 50 ? '...' : '')); ?>
+                                    <?php 
+                                    $user_agent = $log['user_agent'];
+                                    echo esc_html(strlen($user_agent) > 30 ? substr($user_agent, 0, 27) . '...' : $user_agent); 
+                                    ?>
                                 </span>
                             </td>
                         </tr>
@@ -148,9 +154,10 @@ if (!defined('WPINC')) {
                     <tr>
                         <th><?php _e('Time', 'temporary-login-links-premium'); ?></th>
                         <th><?php _e('IP Address', 'temporary-login-links-premium'); ?></th>
+                        <th><?php _e('Token', 'temporary-login-links-premium'); ?></th>
                         <th><?php _e('Email', 'temporary-login-links-premium'); ?></th>
                         <th><?php _e('Status', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('Notes', 'temporary-login-links-premium'); ?></th>
+                        <th><?php _e('Reason', 'temporary-login-links-premium'); ?></th>
                         <th><?php _e('User Agent', 'temporary-login-links-premium'); ?></th>
                     </tr>
                 </tfoot>
@@ -185,6 +192,12 @@ if (!defined('WPINC')) {
             <a href="<?php echo esc_url(admin_url('admin.php?page=temporary-login-links-premium-settings&tab=security')); ?>" class="button">
                 <?php _e('Security Settings', 'temporary-login-links-premium'); ?>
             </a>
+            
+            <?php if (!empty($logs['items'])) : ?>
+                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-security&action=clear_logs'), 'tlp_clear_security_logs'); ?>" class="button button-link-delete" onclick="return confirm('<?php esc_attr_e('Are you sure you want to clear all security logs? This action cannot be undone.', 'temporary-login-links-premium'); ?>');">
+                    <?php _e('Clear All Logs', 'temporary-login-links-premium'); ?>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -209,19 +222,19 @@ if (!defined('WPINC')) {
     font-weight: 500;
 }
 
-.tlp-log-status-success {
-    background-color: #dff2e0;
-    color: #2a8b32;
-}
-
 .tlp-log-status-error {
     background-color: #fbe9e7;
     color: #c62828;
 }
 
+.tlp-log-status-info {
+    background-color: #e8f4fd;
+    color: #0277bd;
+}
+
 .tlp-truncate {
     display: inline-block;
-    max-width: 200px;
+    max-width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -231,5 +244,30 @@ if (!defined('WPINC')) {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+}
+
+.tlp-date-range {
+    display: inline-block;
+    margin: 0 5px;
+}
+
+.tlp-date-range input[type="text"] {
+    width: 110px;
 }
 </style>
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    // Initialize datepickers
+    if ($.fn.datepicker) {
+        $('.tlp-datepicker').datepicker({
+            dateFormat: 'yy-mm-dd',
+            changeMonth: true,
+            changeYear: true,
+            maxDate: 0
+        });
+    }
+});
+</script>

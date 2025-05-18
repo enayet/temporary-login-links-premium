@@ -23,13 +23,13 @@
 class TLP_Security {
 
     /**
-     * The storage for failed login attempts.
+     * The database table name for security logs.
      *
      * @since    1.0.0
      * @access   private
-     * @var      string    $failed_attempts_option    The option name for storing failed login attempts.
+     * @var      string    $security_log_table    The database table name for security logs.
      */
-    private $failed_attempts_option = 'temporary_login_links_premium_failed_attempts';
+    private $security_log_table;
 
     /**
      * Maximum number of failed attempts before throttling.
@@ -55,6 +55,9 @@ class TLP_Security {
      * @since    1.0.0
      */
     public function __construct() {
+        global $wpdb;
+        $this->security_log_table = $wpdb->prefix . 'temporary_login_security_logs';
+        
         // Maybe adjust max failed attempts based on settings
         $settings = get_option('temporary_login_links_premium_settings', array());
         if (!empty($settings['max_failed_attempts'])) {
@@ -63,7 +66,7 @@ class TLP_Security {
         
         // Maybe adjust lockout time based on settings
         if (!empty($settings['lockout_time'])) {
-            $this->lockout_time = (int) $settings['lockout_time'];
+            $this->lockout_time = (int) $settings['lockout_time'] * 60; // Convert minutes to seconds
         }
     }
 
@@ -79,8 +82,11 @@ class TLP_Security {
         // Initialize IP blocking if enabled
         add_action('init', array($this, 'maybe_block_ip'));
         
-        // Cleanup old failed attempts
-        add_action('wp_scheduled_delete', array($this, 'cleanup_failed_attempts'));
+        // Cleanup old security logs
+        add_action('wp_scheduled_delete', array($this, 'cleanup_security_logs'));
+        
+        // Add security headers
+        add_action('admin_init', array($this, 'add_security_headers'));
     }
 
     /**
@@ -134,78 +140,86 @@ class TLP_Security {
     }
 
     /**
-     * Record a failed login attempt.
+     * Record a security event in the database.
      *
      * @since    1.0.0
-     * @param    string    $token    The login token that failed.
-     * @param    string    $reason   The reason for the failure.
+     * @param    string    $token     The token that was used (or attempted).
+     * @param    string    $status    The status of the attempt (e.g., 'failed', 'blocked').
+     * @param    string    $reason    The reason for the log entry.
+     * @param    string    $email     Optional. User email if available.
+     * @return   int|false            The inserted ID or false on failure.
      */
-    public function record_failed_attempt($token, $reason) {
-        $ip = $this->get_client_ip();
-        $failed_attempts = get_option($this->failed_attempts_option, array());
+    public function log_security_event($token, $status, $reason, $email = '') {
+        global $wpdb;
         
-        // Initialize or update the IP entry
-        if (!isset($failed_attempts[$ip])) {
-            $failed_attempts[$ip] = array(
-                'count' => 0,
-                'first_attempt' => time(),
-                'last_attempt' => time(),
-                'attempts' => array()
-            );
-        }
-        
-        // Record this attempt
-        $failed_attempts[$ip]['count']++;
-        $failed_attempts[$ip]['last_attempt'] = time();
-        $failed_attempts[$ip]['attempts'][] = array(
-            'token' => substr($token, 0, 8) . '...', // Store only part of the token for security
-            'time' => time(),
-            'reason' => $reason,
-            'user_agent' => isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field($_SERVER['HTTP_USER_AGENT']) : 'Unknown'
+        // Insert the log entry
+        $result = $wpdb->insert(
+            $this->security_log_table,
+            array(
+                'token_fragment' => substr($token, 0, 8) . '...',
+                'user_email'     => $email,
+                'user_ip'        => $this->get_client_ip(),
+                'user_agent'     => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : 'Unknown',
+                'logged_at'      => current_time('mysql'),
+                'status'         => $status,
+                'reason'         => $reason,
+            ),
+            array('%s', '%s', '%s', '%s', '%s', '%s', '%s')
         );
         
-        // Keep only the last 10 attempts to save space
-        if (count($failed_attempts[$ip]['attempts']) > 10) {
-            $failed_attempts[$ip]['attempts'] = array_slice($failed_attempts[$ip]['attempts'], -10);
+        if ($result) {
+            // If it was a failed attempt, check if we need to notify admin
+            if ($status === 'failed' || $status === 'blocked') {
+                $this->maybe_notify_admin_of_suspicious_activity($token, $reason);
+            }
+            
+            return $wpdb->insert_id;
         }
         
-        // Save updated failed attempts
-        update_option($this->failed_attempts_option, $failed_attempts);
-        
-        // Maybe notify admin of suspicious activity
-        $this->maybe_notify_admin_of_suspicious_activity($ip, $failed_attempts[$ip]);
+        return false;
     }
 
     /**
-     * Check if an IP is currently locked out.
+     * Check if an IP is currently locked out due to too many failed attempts.
      *
      * @since    1.0.0
      * @param    string    $ip    Optional. The IP to check. Default current IP.
      * @return   bool|int          False if not locked, lockout expiry time if locked.
      */
     public function is_ip_locked($ip = null) {
+        global $wpdb;
+        
         if (null === $ip) {
             $ip = $this->get_client_ip();
         }
         
-        $failed_attempts = get_option($this->failed_attempts_option, array());
+        // Get the number of failed attempts in the lockout period
+        $lockout_start = date('Y-m-d H:i:s', time() - $this->lockout_time);
         
-        if (isset($failed_attempts[$ip])) {
-            $attempts = $failed_attempts[$ip];
+        $attempts = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$this->security_log_table} 
+            WHERE user_ip = %s 
+            AND status = 'failed' 
+            AND logged_at > %s",
+            $ip,
+            $lockout_start
+        ));
+        
+        if ($attempts >= $this->max_failed_attempts) {
+            // Get the time of the most recent failed attempt
+            $last_attempt = $wpdb->get_var($wpdb->prepare(
+                "SELECT MAX(logged_at) FROM {$this->security_log_table} 
+                WHERE user_ip = %s AND status = 'failed'",
+                $ip
+            ));
             
-            // If we have more than max failed attempts within the lockout period
-            if ($attempts['count'] >= $this->max_failed_attempts) {
-                $lockout_expiry = $attempts['last_attempt'] + $this->lockout_time;
+            if ($last_attempt) {
+                $lockout_expiry = strtotime($last_attempt) + $this->lockout_time;
                 
-                // If the lockout period has expired, reset the count
-                if (time() > $lockout_expiry) {
-                    $failed_attempts[$ip]['count'] = 0;
-                    $failed_attempts[$ip]['first_attempt'] = time();
-                    update_option($this->failed_attempts_option, $failed_attempts);
-                    return false;
+                // If the lockout hasn't expired yet
+                if (time() < $lockout_expiry) {
+                    return $lockout_expiry;
                 }
-                
-                return $lockout_expiry;
             }
         }
         
@@ -213,7 +227,7 @@ class TLP_Security {
     }
 
     /**
-     * Maybe block an IP based on failed attempts.
+     * Block an IP if it has too many failed attempts.
      *
      * @since    1.0.0
      */
@@ -230,6 +244,14 @@ class TLP_Security {
             $time_remaining = $lockout_expiry - time();
             $minutes = ceil($time_remaining / 60);
             
+            // Log the blocked attempt
+            $token = isset($_GET['temp_login']) ? sanitize_text_field($_GET['temp_login']) : 'unknown';
+            $this->log_security_event(
+                $token,
+                'blocked',
+                sprintf('IP blocked due to too many failed attempts. %d minutes remaining.', $minutes)
+            );
+            
             wp_die(
                 sprintf(
                     __('Too many failed login attempts from your IP address. Please try again in %d minutes.', 'temporary-login-links-premium'),
@@ -242,23 +264,31 @@ class TLP_Security {
     }
 
     /**
-     * Clean up old failed attempts.
+     * Clean up old security logs.
      *
      * @since    1.0.0
+     * @param    int       $days    Optional. Number of days to keep logs. Default 30.
+     * @return   int                Number of deleted logs.
      */
-    public function cleanup_failed_attempts() {
-        $failed_attempts = get_option($this->failed_attempts_option, array());
-        $now = time();
-        $cleanup_time = $this->lockout_time * 2; // Keep data for twice the lockout time
+    public function cleanup_security_logs($days = 30) {
+        global $wpdb;
         
-        foreach ($failed_attempts as $ip => $attempts) {
-            // Remove entries older than cleanup time
-            if ($now - $attempts['last_attempt'] > $cleanup_time) {
-                unset($failed_attempts[$ip]);
-            }
+        // Get retention setting
+        $settings = get_option('temporary_login_links_premium_settings', array());
+        if (!empty($settings['keep_logs_days'])) {
+            $days = (int) $settings['keep_logs_days'];
         }
         
-        update_option($this->failed_attempts_option, $failed_attempts);
+        // Calculate cutoff date
+        $cutoff_date = date('Y-m-d H:i:s', time() - ($days * DAY_IN_SECONDS));
+        
+        // Delete old logs
+        $deleted = $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$this->security_log_table} WHERE logged_at < %s",
+            $cutoff_date
+        ));
+        
+        return $deleted;
     }
 
     /**
@@ -324,13 +354,13 @@ class TLP_Security {
     }
 
     /**
-     * Maybe notify admin of suspicious activity.
+     * Notify admin of suspicious activity.
      *
      * @since    1.0.0
-     * @param    string    $ip         The IP address with suspicious activity.
-     * @param    array     $attempts   The failed attempts data.
+     * @param    string    $token     The token involved.
+     * @param    string    $reason    The reason for the suspicious activity.
      */
-    private function maybe_notify_admin_of_suspicious_activity($ip, $attempts) {
+    private function maybe_notify_admin_of_suspicious_activity($token, $reason) {
         // Check settings to see if we should send notifications
         $settings = get_option('temporary_login_links_premium_settings', array());
         
@@ -338,15 +368,30 @@ class TLP_Security {
             return;
         }
         
+        global $wpdb;
+        
+        // Check how many failed attempts in the last hour from this IP
+        $ip = $this->get_client_ip();
+        $one_hour_ago = date('Y-m-d H:i:s', time() - HOUR_IN_SECONDS);
+        
+        $attempts = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$this->security_log_table} 
+            WHERE user_ip = %s 
+            AND status IN ('failed', 'blocked') 
+            AND logged_at > %s",
+            $ip,
+            $one_hour_ago
+        ));
+        
         // Only notify if we've hit the threshold
-        if ($attempts['count'] < $this->max_failed_attempts) {
+        if ($attempts < $this->max_failed_attempts) {
             return;
         }
         
         // Check if we've already notified for this IP recently
         $notifications = get_option('temporary_login_links_premium_notifications', array());
         
-        if (isset($notifications[$ip]) && $notifications[$ip] > time() - 3600) {
+        if (isset($notifications[$ip]) && $notifications[$ip] > time() - HOUR_IN_SECONDS) {
             return; // Already notified in the last hour
         }
         
@@ -370,28 +415,35 @@ class TLP_Security {
         
         $message .= sprintf(
             __("Number of failed attempts: %d\n", 'temporary-login-links-premium'),
-            $attempts['count']
+            $attempts
         );
         
         $message .= sprintf(
-            __("First attempt: %s\n", 'temporary-login-links-premium'),
-            date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $attempts['first_attempt'])
+            __("Latest reason: %s\n\n", 'temporary-login-links-premium'),
+            $reason
         );
         
-        $message .= sprintf(
-            __("Latest attempt: %s\n\n", 'temporary-login-links-premium'),
-            date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $attempts['last_attempt'])
-        );
+        // Get recent failed attempts
+        $recent_attempts = $wpdb->get_results($wpdb->prepare(
+            "SELECT logged_at, token_fragment, reason 
+            FROM {$this->security_log_table} 
+            WHERE user_ip = %s 
+            AND status IN ('failed', 'blocked') 
+            ORDER BY logged_at DESC LIMIT 5",
+            $ip
+        ));
         
-        $message .= __("Recent failed attempts:\n", 'temporary-login-links-premium');
-        
-        foreach (array_slice($attempts['attempts'], -5) as $attempt) {
-            $message .= sprintf(
-                "- %s: %s (%s)\n",
-                date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $attempt['time']),
-                $attempt['token'],
-                $attempt['reason']
-            );
+        if ($recent_attempts) {
+            $message .= __("Recent failed attempts:\n", 'temporary-login-links-premium');
+            
+            foreach ($recent_attempts as $attempt) {
+                $message .= sprintf(
+                    "- %s: %s (%s)\n",
+                    $attempt->logged_at,
+                    $attempt->token_fragment,
+                    $attempt->reason
+                );
+            }
         }
         
         $message .= "\n";
@@ -523,47 +575,98 @@ class TLP_Security {
     }
 
     /**
-     * Get security logs for the admin.
+     * Get security logs from the database.
      *
      * @since    1.0.0
      * @param    array     $args    Query arguments.
      * @return   array              Security logs data.
      */
     public function get_security_logs($args = array()) {
+        global $wpdb;
+        
         $defaults = array(
             'per_page' => 20,
             'page' => 1,
+            'status' => '',
+            'search' => '',
+            'daterange' => '',
         );
         
         $args = wp_parse_args($args, $defaults);
-        $failed_attempts = get_option($this->failed_attempts_option, array());
-        $logs = array();
         
-        // Flatten the logs for display
-        foreach ($failed_attempts as $ip => $attempts) {
-            foreach ($attempts['attempts'] as $attempt) {
-                $logs[] = array(
-                    'ip' => $ip,
-                    'time' => $attempt['time'],
-                    'token' => $attempt['token'],
-                    'reason' => $attempt['reason'],
-                    'user_agent' => $attempt['user_agent'],
-                );
+        // Build query
+        $sql = "SELECT * FROM {$this->security_log_table}";
+        $where = array();
+        $where_args = array();
+        
+        // Status filter
+        if (!empty($args['status'])) {
+            if ($args['status'] === 'failed') {
+                $where[] = "status IN ('failed', 'blocked')";
+            } else {
+                $where[] = "status = %s";
+                $where_args[] = $args['status'];
             }
         }
         
-        // Sort by time descending
-        usort($logs, function($a, $b) {
-            return $b['time'] - $a['time'];
-        });
+        // Search filter
+        if (!empty($args['search'])) {
+            $search = '%' . $wpdb->esc_like($args['search']) . '%';
+            $where[] = "(token_fragment LIKE %s OR user_email LIKE %s OR user_ip LIKE %s OR reason LIKE %s)";
+            $where_args[] = $search;
+            $where_args[] = $search;
+            $where_args[] = $search;
+            $where_args[] = $search;
+        }
         
-        // Paginate
-        $total_items = count($logs);
+        // Date range filter
+        if (!empty($args['daterange'])) {
+            list($start_date, $end_date) = explode('|', $args['daterange']);
+            if (!empty($start_date)) {
+                $where[] = "logged_at >= %s";
+                $where_args[] = $start_date . ' 00:00:00';
+            }
+            if (!empty($end_date)) {
+                $where[] = "logged_at <= %s";
+                $where_args[] = $end_date . ' 23:59:59';
+            }
+        }
+        
+        // Add WHERE clause if needed
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(' AND ', $where);
+        }
+        
+        // Add ORDER BY
+        $sql .= " ORDER BY logged_at DESC";
+        
+        // Count total items
+        $count_sql = "SELECT COUNT(*) FROM {$this->security_log_table}";
+        if (!empty($where)) {
+            $count_sql .= " WHERE " . implode(' AND ', $where);
+        }
+        
+        if (!empty($where_args)) {
+            $total_items = $wpdb->get_var($wpdb->prepare($count_sql, $where_args));
+        } else {
+            $total_items = $wpdb->get_var($count_sql);
+        }
+        
+        // Pagination
         $per_page = max(1, absint($args['per_page']));
         $page = max(1, absint($args['page']));
         $offset = ($page - 1) * $per_page;
         
-        $logs = array_slice($logs, $offset, $per_page);
+        $sql .= " LIMIT %d, %d";
+        $where_args[] = $offset;
+        $where_args[] = $per_page;
+        
+        // Get results
+        if (!empty($where_args)) {
+            $logs = $wpdb->get_results($wpdb->prepare($sql, $where_args), ARRAY_A);
+        } else {
+            $logs = $wpdb->get_results($sql, ARRAY_A);
+        }
         
         return array(
             'items' => $logs,
@@ -591,8 +694,7 @@ class TLP_Security {
      * Validate that the current user has the required capability.
      *
      * @since    1.0.0
-     * @param    string    $capability    The capability to check.
-     * @return   bool                     Whether the user has the capability.
+     * @return   bool     Whether the user has the capability.
      */
     public function current_user_can_manage() {
         return current_user_can('manage_temporary_logins');

@@ -150,6 +150,34 @@ class TLP_Public {
         // Get the token
         $token = sanitize_text_field($_GET['temp_login']);
 
+        // Check if IP is blocked due to too many failed attempts
+        $ip_blocked = $this->security->is_ip_locked();
+        if ($ip_blocked) {
+            // Already handled by the security class, just exit
+            return;
+        }
+
+        // Pre-check if this token exists in the database
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'temporary_login_links';
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table_name WHERE link_token = %s",
+            $token
+        ));
+
+        // If token doesn't exist in database, log to security logs
+        if ($exists == 0) {
+            $this->security->log_security_event(
+                $token, 
+                'failed', 
+                __('Invalid token - not found in database', 'temporary-login-links-premium')
+            );
+
+            // Show error message
+            $this->show_login_error(__('Invalid login token.', 'temporary-login-links-premium'));
+            return;
+        }
+
         // Check if this is an auto-login request or if branding is disabled
         $auto_login = isset($_GET['auto']) && $_GET['auto'] == '1';
 
@@ -164,6 +192,19 @@ class TLP_Public {
 
             // Check if validation was successful
             if (is_wp_error($result)) {
+                // Log failed attempt to security logs for tracking patterns
+                $email = $wpdb->get_var($wpdb->prepare(
+                    "SELECT user_email FROM $table_name WHERE link_token = %s",
+                    $token
+                ));
+
+                $this->security->log_security_event(
+                    $token, 
+                    'failed', 
+                    $result->get_error_message(),
+                    $email
+                );
+
                 // Show error message
                 $this->show_login_error($result->get_error_message());
                 return;
@@ -175,7 +216,9 @@ class TLP_Public {
 
         // If branding is enabled and not auto-login, the branded login page will be loaded
         // This is handled in branded-login.php which is included via the hook
-    }
+    }     
+    
+    
     
     /**
      * Maybe load the branded login page template.
@@ -204,6 +247,8 @@ class TLP_Public {
             // The exit is in the branded-login.php file
         }
     }    
+   
+    
     
 
     /**

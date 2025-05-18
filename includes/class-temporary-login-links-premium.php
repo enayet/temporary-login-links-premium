@@ -238,6 +238,11 @@ class Temporary_Login_Links_Premium {
         
         // Initialize security hooks
         $this->loader->add_action('admin_init', $this->security, 'register_hooks');
+        
+        // Handle security log actions
+        $this->loader->add_action('admin_init', $plugin_admin, 'handle_security_log_actions');
+            
+        
     }
 
     /**
