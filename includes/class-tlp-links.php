@@ -1231,6 +1231,141 @@ class TLP_Links {
         $where = array();
         $values = array();
 
+        // Determine if we need to join with the links table
+        $need_join = !empty($args['search']);
+
+        // Filter by status
+        if (!empty($args['status'])) {
+            if ($args['status'] === 'success') {
+                $where[] = "a.status = 'success'";
+            } elseif ($args['status'] === 'failed') {
+                $where[] = "a.status != 'success'";
+            } else {
+                $where[] = "a.status = %s";
+                $values[] = $args['status'];
+            }
+        }
+
+        // Search filter (searches in notes or link-related data)
+        if (!empty($args['search'])) {
+            $search_term = '%' . $wpdb->esc_like($args['search']) . '%';
+
+            // Search requires join with links table
+            $where[] = "(a.notes LIKE %s OR l.user_email LIKE %s OR a.user_ip LIKE %s)";
+            $values[] = $search_term;
+            $values[] = $search_term;
+            $values[] = $search_term;
+        }
+
+        // Date range filter
+        if (!empty($args['start_date'])) {
+            $where[] = "a.accessed_at >= %s";
+            $values[] = $args['start_date'] . ' 00:00:00';
+        }
+
+        if (!empty($args['end_date'])) {
+            $where[] = "a.accessed_at <= %s";
+            $values[] = $args['end_date'] . ' 23:59:59';
+        }
+
+        // Build the base query with appropriate fields
+        if ($need_join) {
+            $fields = "SELECT a.*, l.user_email ";
+            $base_query = "FROM {$this->log_table_name} a LEFT JOIN {$this->table_name} l ON a.link_id = l.id";
+        } else {
+            $fields = "SELECT a.* ";
+            $base_query = "FROM {$this->log_table_name} a";
+        }
+
+        // Add WHERE clause if needed
+        $where_clause = '';
+        if (!empty($where)) {
+            $where_clause = ' WHERE ' . implode(' AND ', $where);
+        }
+
+        // Order
+        $allowed_orderby = array('accessed_at', 'user_ip', 'status');
+        $allowed_order = array('ASC', 'DESC');
+
+        $orderby = in_array($args['orderby'], $allowed_orderby) ? $args['orderby'] : 'accessed_at';
+        $order = in_array(strtoupper($args['order']), $allowed_order) ? strtoupper($args['order']) : 'DESC';
+
+        $order_clause = " ORDER BY a.{$orderby} {$order}";
+
+        // Get count of total items
+        $count_sql = "SELECT COUNT(*) " . $base_query . $where_clause;
+
+        if (!empty($values)) {
+            $total_items = $wpdb->get_var($wpdb->prepare($count_sql, $values));
+        } else {
+            // If no values for preparation, use direct query (safe since no user input is involved)
+            $total_items = $wpdb->get_var($count_sql);
+        }
+
+        // Pagination
+        $per_page = max(1, absint($args['per_page']));
+        $page = max(1, absint($args['page']));
+        $offset = ($page - 1) * $per_page;
+
+        // Limit clause
+        $limit = " LIMIT %d, %d";
+        $limit_values = array($offset, $per_page);
+
+        // Complete query
+        $sql = $fields . $base_query . $where_clause . $order_clause . $limit;
+
+        // Combine all values for the prepare statement
+        $all_values = array_merge($values, $limit_values);
+
+        // Get results
+        $logs = array();
+        if (!empty($all_values)) {
+            $logs = $wpdb->get_results($wpdb->prepare($sql, $all_values), ARRAY_A);
+        } else {
+            // If no WHERE conditions, we still need to prepare for LIMIT
+            $logs = $wpdb->get_results($wpdb->prepare($fields . $base_query . $order_clause . $limit, $limit_values), ARRAY_A);
+        }
+
+        // If user_email is not included in the query, fetch it separately for each log
+        if (!$need_join && !empty($logs)) {
+            foreach ($logs as &$log) {
+                $link = $this->get_link($log['link_id']);
+                $log['user_email'] = $link ? $link['user_email'] : '';
+            }
+        }
+
+        return array(
+            'items'       => $logs,
+            'total_items' => $total_items,
+            'per_page'    => $per_page,
+            'page'        => $page,
+        );
+    }  
+    
+    
+    /**
+     * Delete access logs based on filter criteria.
+     *
+     * @since    1.0.0
+     * @param    array     $args    Filter criteria for logs to delete.
+     * @return   int                Number of logs deleted.
+     */
+    public function delete_access_logs($args = array()) {
+        global $wpdb;
+
+        $defaults = array(
+            'status'     => '',
+            'search'     => '',
+            'start_date' => '',
+            'end_date'   => '',
+        );
+
+        $args = wp_parse_args($args, $defaults);
+
+        // Build WHERE clause
+        $where = array();
+        $values = array();
+
         // Filter by status
         if (!empty($args['status'])) {
             if ($args['status'] === 'success') {
@@ -1243,15 +1378,27 @@ class TLP_Links {
             }
         }
 
-        // Search filter (searches in notes or link-related data)
+        // Search filter
         if (!empty($args['search'])) {
             $search_term = '%' . $wpdb->esc_like($args['search']) . '%';
 
-            // Join with links table to search by email
-            $where[] = "(notes LIKE %s OR l.user_email LIKE %s OR user_ip LIKE %s)";
+            // We can only search in fields directly in the logs table
+            $where[] = "(notes LIKE %s OR user_ip LIKE %s)";
             $values[] = $search_term;
             $values[] = $search_term;
-            $values[] = $search_term;
+
+            // If search includes email, we need to join with links table
+            if (strpos($args['search'], '@') !== false) {
+                // This is a complex case, we'll need to find link_ids first
+                $link_ids = $wpdb->get_col($wpdb->prepare(
+                    "SELECT id FROM {$this->table_name} WHERE user_email LIKE %s",
+                    $search_term
+                ));
+
+                if (!empty($link_ids)) {
+                    $where[] = "link_id IN (" . implode(',', array_map('intval', $link_ids)) . ")";
+                }
+            }
         }
 
         // Date range filter
@@ -1265,55 +1412,17 @@ class TLP_Links {
             $values[] = $args['end_date'] . ' 23:59:59';
         }
 
-        // Build the query
-        $sql = "SELECT a.*, l.user_email 
-                FROM {$this->log_table_name} a
-                LEFT JOIN {$this->table_name} l ON a.link_id = l.id";
+        // Build the delete query
+        $sql = "DELETE FROM {$this->log_table_name}";
 
+        // Add WHERE clause if needed
         if (!empty($where)) {
-            $sql .= ' WHERE ' . implode(' AND ', $where);
-        }
-
-        // Order
-        $allowed_orderby = array('accessed_at', 'user_ip', 'status');
-        $allowed_order = array('ASC', 'DESC');
-
-        $orderby = in_array($args['orderby'], $allowed_orderby) ? $args['orderby'] : 'accessed_at';
-        $order = in_array(strtoupper($args['order']), $allowed_order) ? strtoupper($args['order']) : 'DESC';
-
-        $sql .= " ORDER BY a.{$orderby} {$order}";
-
-        // Pagination
-        $per_page = max(1, absint($args['per_page']));
-        $page = max(1, absint($args['page']));
-        $offset = ($page - 1) * $per_page;
-
-        $sql .= " LIMIT %d, %d";
-        $values[] = $offset;
-        $values[] = $per_page;
-
-        // Get results
-        $logs = $wpdb->get_results($wpdb->prepare($sql, $values), ARRAY_A);
-
-        // Count total items
-        $count_sql = "SELECT COUNT(*) FROM {$this->log_table_name} a";
-
-        if (!empty($where)) {
-            if (!empty($args['search'])) {
-                $count_sql .= " LEFT JOIN {$this->table_name} l ON a.link_id = l.id";
-            }
-            $count_sql .= ' WHERE ' . implode(' AND ', $where);
-            $total_items = $wpdb->get_var($wpdb->prepare($count_sql, array_slice($values, 0, count($values) - 2)));
+            $sql .= " WHERE " . implode(' AND ', $where);
+            return $wpdb->query($wpdb->prepare($sql, $values));
         } else {
-            $total_items = $wpdb->get_var($count_sql);
+            // If no conditions, this is a truncate operation
+            return $wpdb->query("TRUNCATE TABLE {$this->log_table_name}");
         }
-
-        return array(
-            'items'       => $logs,
-            'total_items' => $total_items,
-            'per_page'    => $per_page,
-            'page'        => $page,
-        );
     }    
     
     

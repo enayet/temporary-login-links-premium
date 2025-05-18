@@ -87,7 +87,9 @@ class TLP_Admin {
         $this->version = $version;
         
         $this->load_dependencies();
-
+        
+        // Add action to handle access log actions
+        add_action('admin_init', array($this, 'handle_access_log_actions'));    
     }
 
     /**
@@ -1520,6 +1522,58 @@ class TLP_Admin {
 
         // Load template
         include plugin_dir_path(__FILE__) . 'partials/access-logs.php';
+    }
+    
+    
+    /**
+     * Handle access log actions.
+     *
+     * @since    1.0.0
+     */
+    public function handle_access_log_actions() {
+        // Check if we're on the access logs page
+        if (!isset($_GET['page']) || $_GET['page'] !== 'temporary-login-links-premium-access-logs') {
+            return;
+        }
+
+        // Check capability
+        if (!$this->security->current_user_can_manage()) {
+            return;
+        }
+
+        // Handle clear logs action
+        if (isset($_GET['action']) && $_GET['action'] === 'clear_logs' && check_admin_referer('tlp_clear_access_logs')) {
+            $filter_args = array();
+
+            // Preserve any filter parameters
+            if (isset($_GET['status']) && !empty($_GET['status'])) {
+                $filter_args['status'] = sanitize_text_field($_GET['status']);
+            }
+
+            if (isset($_GET['search']) && !empty($_GET['search'])) {
+                $filter_args['search'] = sanitize_text_field($_GET['search']);
+            }
+
+            if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
+                $filter_args['start_date'] = sanitize_text_field($_GET['start_date']);
+            }
+
+            if (isset($_GET['end_date']) && !empty($_GET['end_date'])) {
+                $filter_args['end_date'] = sanitize_text_field($_GET['end_date']);
+            }
+
+            // Delete the logs based on filter
+            $deleted = $this->links->delete_access_logs($filter_args);
+
+            // Redirect back to the logs page
+            $redirect_url = add_query_arg(array(
+                'cleared' => 1,
+                'count' => $deleted
+            ), admin_url('admin.php?page=temporary-login-links-premium-access-logs'));
+
+            wp_redirect($redirect_url);
+            exit;
+        }
     }    
     
     
