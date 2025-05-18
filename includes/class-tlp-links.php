@@ -963,7 +963,27 @@ class TLP_Links {
         $orderby = in_array( $args['orderby'], $allowed_orderby ) ? $args['orderby'] : 'created_at';
         $order = in_array( strtoupper( $args['order'] ), $allowed_order ) ? strtoupper( $args['order'] ) : 'DESC';
         
-        $sql .= " ORDER BY {$orderby} {$order}";
+        //$sql .= " ORDER BY {$orderby} {$order}";
+        
+        $order_by_map = [
+            'created_at' => 'created_at',
+            'expiry' => 'expiry',
+            'user_email' => 'user_email',
+            'role' => 'role',
+            'access_count' => 'access_count',
+            'last_accessed' => 'last_accessed'
+        ];
+
+        $order_map = [
+            'ASC' => 'ASC',
+            'DESC' => 'DESC'
+        ];
+
+        $safe_orderby = isset($order_by_map[$args['orderby']]) ? $order_by_map[$args['orderby']] : 'created_at';
+        $safe_order = isset($order_map[strtoupper($args['order'])]) ? $order_map[strtoupper($args['order'])] : 'DESC';
+
+        $sql .= " ORDER BY {$safe_orderby} {$safe_order}";        
+        
         
         // Pagination
         $per_page = max( 1, absint( $args['per_page'] ) );
@@ -1095,8 +1115,26 @@ class TLP_Links {
         foreach ( $links as $link ) {
             if ( $this->delete_link( $link['id'] ) ) {
                 $count++;
+                    
+                // Also clean up related access logs
+                $wpdb->delete(
+                    $this->log_table_name,
+                    array('link_id' => $link['id']),
+                    array('%d')
+                );
             }
         }
+        
+        
+        // Also clean up orphaned security logs over threshold
+        $security_log_table = $wpdb->prefix . 'temporary_login_security_logs';
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM {$security_log_table} WHERE logged_at < %s",
+                $threshold
+            )
+        );        
+        
         
         return $count;
     }

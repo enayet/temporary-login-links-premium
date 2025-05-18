@@ -57,7 +57,7 @@ if (!defined('WPINC')) {
         <!-- Login URL -->
         <div class="tlp-view-link-url">
             <p class="tlp-login-url"><?php echo esc_url($login_url); ?></p>
-            <button type="button" class="button tlp-copy-button" data-copy="<?php echo esc_url($login_url); ?>">
+            <button type="button" class="button tlp-copy-button" data-copy="<?php echo esc_attr($login_url); ?>">
                 <span class="dashicons dashicons-clipboard"></span> <?php _e('Copy', 'temporary-login-links-premium'); ?>
             </button>
             <span class="tlp-copy-success" style="display: none;"><?php _e('Copied!', 'temporary-login-links-premium'); ?></span>
@@ -196,7 +196,7 @@ if (!defined('WPINC')) {
             <h3><?php _e('Actions', 'temporary-login-links-premium'); ?></h3>
             
             <div class="tlp-action-buttons">
-                <button type="button" class="button tlp-copy-button" data-copy="<?php echo esc_url($login_url); ?>">
+                <button type="button" class="button tlp-copy-button" data-copy="<?php echo esc_attr($login_url); ?>">
                     <span class="dashicons dashicons-clipboard"></span> <?php _e('Copy Link', 'temporary-login-links-premium'); ?>
                 </button>
                 

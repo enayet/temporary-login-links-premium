@@ -297,27 +297,32 @@ class TLP_Security {
      * @since    1.0.0
      * @return   string    The client's IP address.
      */
+    
     public function get_client_ip() {
-        // Check for shared internet/ISP IP
+        
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             return sanitize_text_field($_SERVER['HTTP_CLIENT_IP']);
-        }
+        }        
         
-        // Check for IPs passing through proxies
-        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            // Use the first IP from the list
-            $ip_list = explode(',', sanitize_text_field($_SERVER['HTTP_X_FORWARDED_FOR']));
-            return trim($ip_list[0]);
+        // If you're behind a load balancer or proxy that sets X-Forwarded-For
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']) && filter_var($_SERVER['HTTP_X_FORWARDED_FOR'], FILTER_VALIDATE_IP)) {
+            // Use the first IP in the list
+            $ip_list = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ip = trim($ip_list[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return sanitize_text_field($ip);
+            }
         }
-        
-        // Use remote address if available
-        if (!empty($_SERVER['REMOTE_ADDR'])) {
+
+        // Get direct remote address as fallback
+        if (!empty($_SERVER['REMOTE_ADDR']) && filter_var($_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP)) {
             return sanitize_text_field($_SERVER['REMOTE_ADDR']);
         }
-        
-        // Fallback to a generic IP
+
+        // Default
         return '127.0.0.1';
-    }
+    }    
+    
 
     /**
      * Validate an IP address.

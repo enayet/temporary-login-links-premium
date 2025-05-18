@@ -30,6 +30,18 @@ class Temporary_Login_Links_Premium_Activator {
      * @since    1.0.0
      */
     public static function activate() {
+        
+        // Check PHP version
+        if (version_compare(PHP_VERSION, '7.0', '<')) {
+            deactivate_plugins(TEMPORARY_LOGIN_LINKS_PREMIUM_BASENAME);
+            wp_die(
+                __('Temporary Login Links Premium requires PHP 7.0 or higher.', 'temporary-login-links-premium'),
+                'Plugin Activation Error',
+                array('back_link' => true)
+            );
+        }        
+        
+        
         // Check WordPress version
         if ( version_compare( get_bloginfo( 'version' ), '5.0', '<' ) ) {
             deactivate_plugins( TEMPORARY_LOGIN_LINKS_PREMIUM_BASENAME );

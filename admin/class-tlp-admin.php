@@ -1024,7 +1024,7 @@ class TLP_Admin {
     private function get_dashboard_stats() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'temporary_login_links';
-        $current_time = current_time('mysql');
+        $current_time = current_time('mysql');      
         
         // Get active links count
         $active_links_count = $wpdb->get_var($wpdb->prepare(

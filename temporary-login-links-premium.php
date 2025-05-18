@@ -20,7 +20,7 @@ if ( ! defined( 'WPINC' ) ) {
 /**
  * Current plugin version.
  */
-define( 'TEMPORARY_LOGIN_LINKS_PREMIUM_VERSION', '1.0.0' );
+define( 'TEMPORARY_LOGIN_LINKS_PREMIUM_VERSION', '1.0.3' );
 
 /**
  * Plugin basename.

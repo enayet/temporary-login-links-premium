@@ -178,30 +178,35 @@ class TLP_Public {
             return;
         }
 
-        // Check if this is an auto-login request or if branding is disabled
+        // ALWAYS check token validity and log results
+        $validation_error = $this->check_token_validity($link_data, $token);
+
+        // Check if this is an auto-login request
         $auto_login = isset($_GET['auto']) && $_GET['auto'] == '1';
 
         // Get branding settings
         $branding = get_option('temporary_login_links_premium_branding', array());
         $branding_enabled = !empty($branding['enable_branding']) && $branding['enable_branding'] == 1;
 
-        // If branding is disabled or auto-login is requested, proceed with login
-        if (!$branding_enabled || $auto_login) {
-            // Do our own validation to track specific failures
-            $validation_error = $this->check_token_validity($link_data, $token);
-
-            if ($validation_error) {
-                // Show error message
+        // If there's a validation error
+        if ($validation_error) {
+            // Show error message if auto-login or branding disabled
+            if ($auto_login || !$branding_enabled) {
                 $this->show_login_error($validation_error['message']);
                 return;
             }
+            // If branding is enabled, the error will be shown in the branded template
+            // The branded-login.php file will handle displaying the appropriate error
+            return;
+        }
 
+        // If auto-login or branding disabled, proceed with login
+        if ($auto_login || !$branding_enabled) {
             // Validate the token with the main system
             $result = $this->links->validate_login_token($token);
 
             // Check if validation was successful
             if (is_wp_error($result)) {
-                // Log general failure - should rarely happen since we checked above
                 $this->security->log_security_event(
                     $token, 
                     'failed', 
@@ -217,9 +222,7 @@ class TLP_Public {
             // Log in the user
             $this->login_user($result['user_id'], $result['redirect_to']);
         }
-
         // If branding is enabled and not auto-login, the branded login page will be loaded
-        // This is handled in branded-login.php which is included via the hook
     }    
     
     

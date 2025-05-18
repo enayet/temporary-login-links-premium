@@ -33,9 +33,6 @@ class Temporary_Login_Links_Premium_Deactivator {
         // Clear scheduled events
         self::clear_scheduled_events();
         
-        // Disable active temporary logins
-        self::disable_active_logins();
-        
         // Remove transients
         self::remove_transients();
     }
@@ -53,66 +50,7 @@ class Temporary_Login_Links_Premium_Deactivator {
         wp_clear_scheduled_hook( 'temporary_login_links_check_expiry_event' );
     }
 
-    /**
-     * Disables all active temporary logins.
-     *
-     * Doesn't delete the links but marks them as inactive to prevent usage
-     * while the plugin is deactivated.
-     *
-     * @since    1.0.0
-     */
-    private static function disable_active_logins() {
-        global $wpdb;
-        
-        // Get the table name
-        $table_name = $wpdb->prefix . 'temporary_login_links';
-        
-        // Check if the table exists
-        if ( $wpdb->get_var( "SHOW TABLES LIKE '$table_name'" ) != $table_name ) {
-            return;
-        }
-        
-        // Mark all active links as inactive
-        $wpdb->update(
-            $table_name,
-            array( 
-                'is_active' => 0,
-                'notes'     => 'Automatically deactivated due to plugin deactivation'
-            ),
-            array( 'is_active' => 1 ),
-            array( '%d', '%s' ),
-            array( '%d' )
-        );
-        
-        // Log deactivation for all active links
-        $access_log_table = $wpdb->prefix . 'temporary_login_access_log';
-        
-        // Check if log table exists
-        if ( $wpdb->get_var( "SHOW TABLES LIKE '$access_log_table'" ) != $access_log_table ) {
-            return;
-        }
-        
-        // Get all active link IDs
-        $active_link_ids = $wpdb->get_col( "SELECT id FROM $table_name WHERE is_active = 0" );
-        
-        if ( ! empty( $active_link_ids ) ) {
-            foreach ( $active_link_ids as $link_id ) {
-                // Add entry to access log
-                $wpdb->insert(
-                    $access_log_table,
-                    array(
-                        'link_id'     => $link_id,
-                        'user_ip'     => '127.0.0.1',
-                        'user_agent'  => 'Temporary Login Links Premium Deactivation',
-                        'accessed_at' => current_time( 'mysql' ),
-                        'status'      => 'deactivated',
-                        'notes'       => 'Link deactivated due to plugin deactivation'
-                    ),
-                    array( '%d', '%s', '%s', '%s', '%s', '%s' )
-                );
-            }
-        }
-    }
+
 
     /**
      * Removes any transients created by the plugin.
