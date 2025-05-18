@@ -250,6 +250,16 @@ class TLP_Admin {
             array($this, 'display_branding_page')
         );
         
+        add_submenu_page(
+            'temporary-login-links-premium',
+            __('Access Logs', 'temporary-login-links-premium'),
+            __('Access Logs', 'temporary-login-links-premium'),
+            $capability,
+            'temporary-login-links-premium-access-logs',
+            array($this, 'display_access_logs_page')
+        );        
+        
+        
         // Add security logs submenu
         add_submenu_page(
             'temporary-login-links-premium',
@@ -1462,7 +1472,56 @@ class TLP_Admin {
             wp_redirect(admin_url('admin.php?page=temporary-login-links-premium-security&cleared=1'));
             exit;
         }
+    }
+    
+    
+    /**
+     * Display the access logs page.
+     *
+     * @since    1.0.0
+     */
+    public function display_access_logs_page() {
+        // Check capability
+        if (!$this->security->current_user_can_manage()) {
+            wp_die(__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
+        }
+
+        // Get current page
+        $page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
+        $per_page = 20;
+
+        // Prepare filter arguments
+        $args = array(
+            'page' => $page,
+            'per_page' => $per_page
+        );
+
+        // Status filter
+        if (isset($_GET['status']) && !empty($_GET['status'])) {
+            $args['status'] = sanitize_text_field($_GET['status']);
+        }
+
+        // Search filter
+        if (isset($_GET['search']) && !empty($_GET['search'])) {
+            $args['search'] = sanitize_text_field($_GET['search']);
+        }
+
+        // Date range filter
+        if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
+            $args['start_date'] = sanitize_text_field($_GET['start_date']);
+        }
+
+        if (isset($_GET['end_date']) && !empty($_GET['end_date'])) {
+            $args['end_date'] = sanitize_text_field($_GET['end_date']);
+        }
+
+        // Get access logs
+        $logs = $this->links->get_all_access_logs($args);
+
+        // Load template
+        include plugin_dir_path(__FILE__) . 'partials/access-logs.php';
     }    
+    
     
     
 }        

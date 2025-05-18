@@ -1203,4 +1203,118 @@ class TLP_Links {
         return (bool) $result;
     }    
     
+    
+    /**
+     * Get all access logs.
+     *
+     * @since    1.0.0
+     * @param    array     $args       The query args.
+     * @return   array                 The access logs data.
+     */
+    public function get_all_access_logs($args = array()) {
+        global $wpdb;
+
+        $defaults = array(
+            'per_page'   => 20,
+            'page'       => 1,
+            'orderby'    => 'accessed_at',
+            'order'      => 'DESC',
+            'status'     => '',
+            'search'     => '',
+            'start_date' => '',
+            'end_date'   => '',
+        );
+
+        $args = wp_parse_args($args, $defaults);
+
+        // Build WHERE clause
+        $where = array();
+        $values = array();
+
+        // Filter by status
+        if (!empty($args['status'])) {
+            if ($args['status'] === 'success') {
+                $where[] = "status = 'success'";
+            } elseif ($args['status'] === 'failed') {
+                $where[] = "status != 'success'";
+            } else {
+                $where[] = "status = %s";
+                $values[] = $args['status'];
+            }
+        }
+
+        // Search filter (searches in notes or link-related data)
+        if (!empty($args['search'])) {
+            $search_term = '%' . $wpdb->esc_like($args['search']) . '%';
+
+            // Join with links table to search by email
+            $where[] = "(notes LIKE %s OR l.user_email LIKE %s OR user_ip LIKE %s)";
+            $values[] = $search_term;
+            $values[] = $search_term;
+            $values[] = $search_term;
+        }
+
+        // Date range filter
+        if (!empty($args['start_date'])) {
+            $where[] = "accessed_at >= %s";
+            $values[] = $args['start_date'] . ' 00:00:00';
+        }
+
+        if (!empty($args['end_date'])) {
+            $where[] = "accessed_at <= %s";
+            $values[] = $args['end_date'] . ' 23:59:59';
+        }
+
+        // Build the query
+        $sql = "SELECT a.*, l.user_email 
+                FROM {$this->log_table_name} a
+                LEFT JOIN {$this->table_name} l ON a.link_id = l.id";
+
+        if (!empty($where)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+
+        // Order
+        $allowed_orderby = array('accessed_at', 'user_ip', 'status');
+        $allowed_order = array('ASC', 'DESC');
+
+        $orderby = in_array($args['orderby'], $allowed_orderby) ? $args['orderby'] : 'accessed_at';
+        $order = in_array(strtoupper($args['order']), $allowed_order) ? strtoupper($args['order']) : 'DESC';
+
+        $sql .= " ORDER BY a.{$orderby} {$order}";
+
+        // Pagination
+        $per_page = max(1, absint($args['per_page']));
+        $page = max(1, absint($args['page']));
+        $offset = ($page - 1) * $per_page;
+
+        $sql .= " LIMIT %d, %d";
+        $values[] = $offset;
+        $values[] = $per_page;
+
+        // Get results
+        $logs = $wpdb->get_results($wpdb->prepare($sql, $values), ARRAY_A);
+
+        // Count total items
+        $count_sql = "SELECT COUNT(*) FROM {$this->log_table_name} a";
+
+        if (!empty($where)) {
+            if (!empty($args['search'])) {
+                $count_sql .= " LEFT JOIN {$this->table_name} l ON a.link_id = l.id";
+            }
+            $count_sql .= ' WHERE ' . implode(' AND ', $where);
+            $total_items = $wpdb->get_var($wpdb->prepare($count_sql, array_slice($values, 0, count($values) - 2)));
+        } else {
+            $total_items = $wpdb->get_var($count_sql);
+        }
+
+        return array(
+            'items'       => $logs,
+            'total_items' => $total_items,
+            'per_page'    => $per_page,
+            'page'        => $page,
+        );
+    }    
+    
+    
 }
