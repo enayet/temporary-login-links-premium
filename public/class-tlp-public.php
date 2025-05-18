@@ -160,16 +160,16 @@ class TLP_Public {
         // Pre-check if this token exists in the database
         global $wpdb;
         $table_name = $wpdb->prefix . 'temporary_login_links';
-        $exists = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM $table_name WHERE link_token = %s",
+        $link_data = $wpdb->get_row($wpdb->prepare(
+            "SELECT id, user_email, is_active, expiry, max_accesses, access_count, ip_restriction FROM $table_name WHERE link_token = %s",
             $token
-        ));
+        ), ARRAY_A);
 
         // If token doesn't exist in database, log to security logs
-        if ($exists == 0) {
+        if (!$link_data) {
             $this->security->log_security_event(
                 $token, 
-                'failed', 
+                'invalid_token', 
                 __('Invalid token - not found in database', 'temporary-login-links-premium')
             );
 
@@ -187,22 +187,26 @@ class TLP_Public {
 
         // If branding is disabled or auto-login is requested, proceed with login
         if (!$branding_enabled || $auto_login) {
-            // Validate the token
+            // Do our own validation to track specific failures
+            $validation_error = $this->check_token_validity($link_data, $token);
+
+            if ($validation_error) {
+                // Show error message
+                $this->show_login_error($validation_error['message']);
+                return;
+            }
+
+            // Validate the token with the main system
             $result = $this->links->validate_login_token($token);
 
             // Check if validation was successful
             if (is_wp_error($result)) {
-                // Log failed attempt to security logs for tracking patterns
-                $email = $wpdb->get_var($wpdb->prepare(
-                    "SELECT user_email FROM $table_name WHERE link_token = %s",
-                    $token
-                ));
-
+                // Log general failure - should rarely happen since we checked above
                 $this->security->log_security_event(
                     $token, 
                     'failed', 
                     $result->get_error_message(),
-                    $email
+                    $link_data['user_email']
                 );
 
                 // Show error message
@@ -216,7 +220,7 @@ class TLP_Public {
 
         // If branding is enabled and not auto-login, the branded login page will be loaded
         // This is handled in branded-login.php which is included via the hook
-    }     
+    }    
     
     
     
@@ -248,6 +252,81 @@ class TLP_Public {
         }
     }    
    
+    
+    
+    /**
+     * Check token validity and log specific failure reasons.
+     * 
+     * @since    1.0.0
+     * @param    array     $link_data    The link data from the database.
+     * @param    string    $token        The login token.
+     * @return   array|false             False if valid, or array with error details if invalid.
+     */
+    private function check_token_validity($link_data, $token) {
+        // Check if link is active
+        if ($link_data['is_active'] == 0) {
+            $this->security->log_security_event(
+                $token, 
+                'inactive', 
+                __('This login link has been deactivated.', 'temporary-login-links-premium'),
+                $link_data['user_email']
+            );
+            return array(
+                'status' => 'inactive',
+                'message' => __('This login link has been deactivated.', 'temporary-login-links-premium')
+            );
+        }
+
+        // Check expiration
+        if (strtotime($link_data['expiry']) < time()) {
+            $this->security->log_security_event(
+                $token, 
+                'expired', 
+                __('This login link has expired.', 'temporary-login-links-premium'),
+                $link_data['user_email']
+            );
+            return array(
+                'status' => 'expired',
+                'message' => __('This login link has expired.', 'temporary-login-links-premium')
+            );
+        }
+
+        // Check max accesses
+        if ($link_data['max_accesses'] > 0 && $link_data['access_count'] >= $link_data['max_accesses']) {
+            $this->security->log_security_event(
+                $token, 
+                'max_accesses', 
+                __('This login link has reached its maximum number of uses.', 'temporary-login-links-premium'),
+                $link_data['user_email']
+            );
+            return array(
+                'status' => 'max_accesses',
+                'message' => __('This login link has reached its maximum number of uses.', 'temporary-login-links-premium')
+            );
+        }
+
+        // Check IP restriction if set
+        if (!empty($link_data['ip_restriction'])) {
+            $ip_addresses = array_map('trim', explode(',', $link_data['ip_restriction']));
+            $current_ip = $this->security->get_client_ip();
+
+            if (!in_array($current_ip, $ip_addresses)) {
+                $this->security->log_security_event(
+                    $token, 
+                    'ip_restricted', 
+                    __('Access denied from your IP address.', 'temporary-login-links-premium'),
+                    $link_data['user_email']
+                );
+                return array(
+                    'status' => 'ip_restricted',
+                    'message' => __('Access denied from your IP address.', 'temporary-login-links-premium')
+                );
+            }
+        }
+
+        // Token is valid
+        return false;
+    }    
     
     
 
