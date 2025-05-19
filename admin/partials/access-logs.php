@@ -56,9 +56,10 @@ if (!defined('WPINC')) {
                     
                     <input type="text" name="search" placeholder="<?php esc_attr_e('Search logs...', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['search']) ? esc_attr($_GET['search']) : ''; ?>">
                     
+
                     <span class="tlp-date-range">
-                        <input type="text" name="start_date" id="start_date" class="tlp-datepicker" placeholder="<?php esc_attr_e('From date', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['start_date']) ? esc_attr($_GET['start_date']) : ''; ?>">
-                        <input type="text" name="end_date" id="end_date" class="tlp-datepicker" placeholder="<?php esc_attr_e('To date', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['end_date']) ? esc_attr($_GET['end_date']) : ''; ?>">
+                        <input type="date" name="start_date" id="start_date" value="<?php echo isset($_GET['start_date']) ? esc_attr($_GET['start_date']) : ''; ?>">
+                        <input type="date" name="end_date" id="end_date" value="<?php echo isset($_GET['end_date']) ? esc_attr($_GET['end_date']) : ''; ?>">
                     </span>
                     
                     <?php submit_button(esc_html__('Filter', 'temporary-login-links-premium'), 'action', 'filter', false); ?>
@@ -98,16 +99,26 @@ if (!defined('WPINC')) {
                         ?>
                     </span>
                     <?php
-                    echo wp_kses_post(
-                        paginate_links(array(
-                            'base' => add_query_arg('paged', '%#%'),
-                            'format' => '',
-                            'prev_text' => '&laquo;',
-                            'next_text' => '&raquo;',
-                            'total' => ceil($logs['total_items'] / $logs['per_page']),
-                            'current' => $logs['page'],
-                        ))
-                    );
+//                    echo wp_kses_post(
+//                        paginate_links(array(
+//                            'base' => add_query_arg('paged', '%#%'),
+//                            'format' => '',
+//                            'prev_text' => '&laquo;',
+//                            'next_text' => '&raquo;',
+//                            'total' => ceil($logs['total_items'] / $logs['per_page']),
+//                            'current' => $logs['page'],
+//                        ))
+//                    );
+                    
+                    $pagination = paginate_links(array(
+                        'base' => add_query_arg('paged', '%#%'),
+                        'format' => '',
+                        'prev_text' => '&laquo;',
+                        'next_text' => '&raquo;',
+                        'total' => ceil($logs['total_items'] / $logs['per_page']),
+                        'current' => $logs['page'],
+                    ));
+                    echo $pagination ? wp_kses_post($pagination) : '';                    
                     ?>
                 </div>
             <?php endif; ?>
@@ -251,16 +262,26 @@ if (!defined('WPINC')) {
                             ?>
                         </span>
                         <?php
-                        echo wp_kses_post(
-                            paginate_links(array(
-                                'base' => add_query_arg('paged', '%#%'),
-                                'format' => '',
-                                'prev_text' => '&laquo;',
-                                'next_text' => '&raquo;',
-                                'total' => ceil($logs['total_items'] / $logs['per_page']),
-                                'current' => $logs['page'],
-                            ))
-                        );
+//                        echo wp_kses_post(
+//                            paginate_links(array(
+//                                'base' => add_query_arg('paged', '%#%'),
+//                                'format' => '',
+//                                'prev_text' => '&laquo;',
+//                                'next_text' => '&raquo;',
+//                                'total' => ceil($logs['total_items'] / $logs['per_page']),
+//                                'current' => $logs['page'],
+//                            ))
+//                        );
+                        
+                        $pagination = paginate_links(array(
+                            'base' => add_query_arg('paged', '%#%'),
+                            'format' => '',
+                            'prev_text' => '&laquo;',
+                            'next_text' => '&raquo;',
+                            'total' => ceil($logs['total_items'] / $logs['per_page']),
+                            'current' => $logs['page'],
+                        ));
+                        echo $pagination ? wp_kses_post($pagination) : '';                        
                         ?>
                     </div>
                 <?php endif; ?>

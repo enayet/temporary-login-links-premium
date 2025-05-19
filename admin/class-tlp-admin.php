@@ -113,31 +113,30 @@ class TLP_Admin {
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-tlp-list-table.php';
     }
 
+
     /**
      * Register the stylesheets for the admin area.
      *
      * @since    1.0.0
      */
-    
-    
-    
-    
     public function enqueue_styles() {
         // Only enqueue on plugin pages
         if ($this->is_plugin_page()) {
+            // Main plugin stylesheet
             wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/tlp-admin.css', array(), $this->version, 'all');
-            
-            // Add color picker styles for branding settings
+
+            // Page-specific styles
             $page = isset($_GET['page']) ? sanitize_text_field(wp_unslash($_GET['page'])) : '';
-            
+
+            // Add color picker styles for branding settings
             if ($page === 'temporary-login-links-premium-branding') {
                 wp_enqueue_style('wp-color-picker');
             }
-            
-            // Add datepicker styles for creating/editing links
-            if (($page === 'temporary-login-links-premium-links') && 
-                (isset($_GET['action']) && ($_GET['action'] === 'create' || $_GET['action'] === 'edit'))) {
-                wp_enqueue_style('jquery-ui-datepicker');
+
+            // Add jQuery UI datepicker styles only for create/edit links
+            if ($page === 'temporary-login-links-premium-links' && 
+                isset($_GET['action']) && ($_GET['action'] === 'create' || $_GET['action'] === 'edit')) {
+                wp_enqueue_style('jquery-ui', 'https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css');
             }
         }
     }
@@ -150,8 +149,9 @@ class TLP_Admin {
     public function enqueue_scripts() {
         // Only enqueue on plugin pages
         if ($this->is_plugin_page()) {
+            // Main plugin script
             wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/tlp-admin.js', array('jquery'), $this->version, false);
-            
+
             // Add AJAX nonce
             wp_localize_script($this->plugin_name, 'tlp_ajax', array(
                 'ajax_url' => admin_url('admin-ajax.php'),
@@ -160,23 +160,51 @@ class TLP_Admin {
                 'confirm_deactivate' => __('Are you sure you want to deactivate this link? The user will no longer be able to log in.', 'temporary-login-links-premium'),
                 'copied' => __('Copied to clipboard!', 'temporary-login-links-premium')
             ));
-            
+
+            // Page-specific scripts
+            $page = isset($_GET['page']) ? sanitize_text_field(wp_unslash($_GET['page'])) : '';
+
+            // Add datepicker only for link creation/editing
+            if ($page === 'temporary-login-links-premium-links' && 
+                isset($_GET['action']) && ($_GET['action'] === 'create' || $_GET['action'] === 'edit')) {
+                wp_enqueue_script('jquery-ui-datepicker');
+                add_action('admin_footer', array($this, 'add_datepicker_init_script'));
+            }
+
             // Add color picker for branding settings
-            if (isset($_GET['page']) && $_GET['page'] === 'temporary-login-links-premium-branding') {
+            if ($page === 'temporary-login-links-premium-branding') {
                 wp_enqueue_script('wp-color-picker');
-                
                 // Add media uploader for logo upload
                 wp_enqueue_media();
             }
-            
-            // Add datepicker for custom expiry date
-            if ((isset($_GET['page']) && $_GET['page'] === 'temporary-login-links-premium-links') && 
-                (isset($_GET['action']) && ($_GET['action'] === 'create' || $_GET['action'] === 'edit'))) {
-                wp_enqueue_script('jquery-ui-datepicker');
-                wp_enqueue_script('jquery-ui-slider');
-            }
         }
     }
+
+    /**
+     * Add the datepicker initialization script for custom expiry dates.
+     * Only used on create/edit link pages.
+     *
+     * @since    1.0.0
+     */
+    public function add_datepicker_init_script() {
+        ?>
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Initialize datepicker for custom expiry date
+            if ($('#custom_expiry').length) {
+                $('#custom_expiry').datepicker({
+                    dateFormat: 'yy-mm-dd',
+                    changeMonth: true,
+                    changeYear: true,
+                    minDate: 0, // Only future dates
+                    yearRange: 'c:c+10' // Current year to 10 years in the future
+                });
+            }
+        });
+        </script>
+        <?php
+    }
+    
 
     /**
      * Check if we're on a plugin page.

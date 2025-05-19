@@ -325,7 +325,7 @@
 }
 
 .tlp-view-link-url .tlp-login-url {
-    width: calc(100% - 50px);
+    width: calc(100% - 100px);
     font-family: monospace;
     word-break: break-all;
 }
