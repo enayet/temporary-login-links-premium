@@ -291,7 +291,7 @@ class TLP_Admin {
     public function display_dashboard_page() {
         // Check capability
         if (!$this->security->current_user_can_manage()) {
-            wp_die(__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
+            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
         }
         
         // Get statistics
@@ -309,7 +309,7 @@ class TLP_Admin {
     public function display_links_page() {
         // Check capability
         if (!$this->security->current_user_can_manage()) {
-            wp_die(__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
+            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
         }
         
         // Process link actions
@@ -342,7 +342,7 @@ class TLP_Admin {
     public function display_branding_page() {
         // Check capability
         if (!$this->security->current_user_can_manage()) {
-            wp_die(__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
+            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
         }
         
         // Handle form submission
@@ -375,7 +375,7 @@ class TLP_Admin {
     public function display_security_page() {
         // Check capability
         if (!$this->security->current_user_can_manage()) {
-            wp_die(__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
+            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
         }
         
         // Get current page
@@ -629,8 +629,8 @@ class TLP_Admin {
         
         if (isset($_GET['deleted']) && $_GET['deleted'] == 1) {
             $count = isset($_GET['count']) ? intval($_GET['count']) : 1;
-            $message = sprintf(
-                _n('Link deleted successfully.', '%d links deleted successfully.', $count, 'temporary-login-links-premium'),
+            /* translators: Link Deleted */
+            $message = sprintf(_n('%d link deleted successfully.', '%d links deleted successfully.', $count, 'temporary-login-links-premium'),
                 $count
             );
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html($message) . '</p></div>';
@@ -638,8 +638,8 @@ class TLP_Admin {
         
         if (isset($_GET['deactivated']) && $_GET['deactivated'] == 1) {
             $count = isset($_GET['count']) ? intval($_GET['count']) : 1;
-            $message = sprintf(
-                _n('Link deactivated successfully.', '%d links deactivated successfully.', $count, 'temporary-login-links-premium'),
+            /* translators: Link activated */
+            $message = sprintf(_n('%d link deactivated successfully.', '%d links deactivated successfully.', $count, 'temporary-login-links-premium'),
                 $count
             );
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html($message) . '</p></div>';
@@ -647,8 +647,8 @@ class TLP_Admin {
         
         if (isset($_GET['activated']) && $_GET['activated'] == 1) {
             $count = isset($_GET['count']) ? intval($_GET['count']) : 1;
-            $message = sprintf(
-                _n('Link activated successfully.', '%d links activated successfully.', $count, 'temporary-login-links-premium'),
+            /* translators: Link activated */
+            $message = sprintf(_n('%d link activated successfully.', '%d links activated successfully.', $count, 'temporary-login-links-premium'),
                 $count
             );
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html($message) . '</p></div>';
@@ -656,8 +656,8 @@ class TLP_Admin {
         
         if (isset($_GET['extended']) && $_GET['extended'] == 1) {
             $count = isset($_GET['count']) ? intval($_GET['count']) : 1;
-            $message = sprintf(
-                _n('Link expiry date extended successfully.', '%d links expiry dates extended successfully.', $count, 'temporary-login-links-premium'),
+            /* translators: Link expiry date extended */
+            $message = sprintf(_n('%d link expiry date extended successfully.', '%d links expiry dates extended successfully.', $count, 'temporary-login-links-premium'),
                 $count
             );
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html($message) . '</p></div>';
@@ -1485,7 +1485,7 @@ class TLP_Admin {
     public function display_access_logs_page() {
         // Check capability
         if (!$this->security->current_user_can_manage()) {
-            wp_die(__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
+            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
         }
 
         // Get current page
@@ -1578,5 +1578,4 @@ class TLP_Admin {
     
     
     
-}        
-        
+}

@@ -20,8 +20,8 @@ if (!defined('WPINC')) {
 
 <div class="wrap tlp-wrap">
     <h1>
-        <?php _e('View Temporary Login Link', 'temporary-login-links-premium'); ?>
-        <a href="<?php echo esc_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=edit&id=' . $link_id)); ?>" class="page-title-action"><?php _e('Edit', 'temporary-login-links-premium'); ?></a>
+        <?php echo esc_html__('View Temporary Login Link', 'temporary-login-links-premium'); ?>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=edit&id=' . $link_id)); ?>" class="page-title-action"><?php echo esc_html__('Edit', 'temporary-login-links-premium'); ?></a>
     </h1>
     
     <?php 
@@ -29,7 +29,7 @@ if (!defined('WPINC')) {
     if ($is_new) : 
     ?>
     <div class="notice notice-success is-dismissible">
-        <p><?php _e('Temporary login link created successfully!', 'temporary-login-links-premium'); ?></p>
+        <p><?php esc_html__('Temporary login link created successfully!', 'temporary-login-links-premium'); ?></p>
     </div>
     <?php endif; ?>
     
@@ -38,19 +38,23 @@ if (!defined('WPINC')) {
         <div class="tlp-view-link-header">
             <div class="tlp-user-info">
                 <h2><?php echo esc_html($link['user_email']); ?></h2>
-                <p><?php printf(__('Role: %s', 'temporary-login-links-premium'), $this->get_role_display_name($link['role'])); ?></p>
+                <p><?php 
+                        /* translators: Role */
+                        printf(esc_html__('Role: %s', 'temporary-login-links-premium'), $this->get_role_display_name($link['role'])); 
+                    ?>
+                </p>
             </div>
             
             <div class="tlp-actions">
                 <?php if ($link['is_active'] == 1) : ?>
-                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=deactivate&id=' . $link_id), 'tlp_deactivate_link'); ?>" class="button tlp-deactivate-link"><?php _e('Deactivate', 'temporary-login-links-premium'); ?></a>
+                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=deactivate&id=' . $link_id), 'tlp_deactivate_link'); ?>" class="button tlp-deactivate-link"><?php esc_html__('Deactivate', 'temporary-login-links-premium'); ?></a>
                 <?php else : ?>
-                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=activate&id=' . $link_id), 'tlp_activate_link'); ?>" class="button"><?php _e('Activate', 'temporary-login-links-premium'); ?></a>
+                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=activate&id=' . $link_id), 'tlp_activate_link'); ?>" class="button"><?php esc_html__('Activate', 'temporary-login-links-premium'); ?></a>
                 <?php endif; ?>
                 
-                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=extend&id=' . $link_id . '&duration=7+days'), 'tlp_extend_link'); ?>" class="button"><?php _e('Extend', 'temporary-login-links-premium'); ?></a>
+                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=extend&id=' . $link_id . '&duration=7+days'), 'tlp_extend_link'); ?>" class="button"><?php esc_html__('Extend', 'temporary-login-links-premium'); ?></a>
                 
-                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=delete&id=' . $link_id), 'tlp_delete_link'); ?>" class="button button-link-delete tlp-delete-link"><?php _e('Delete', 'temporary-login-links-premium'); ?></a>
+                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=delete&id=' . $link_id), 'tlp_delete_link'); ?>" class="button button-link-delete tlp-delete-link"><?php esc_html__('Delete', 'temporary-login-links-premium'); ?></a>
             </div>
         </div>
         
@@ -58,33 +62,33 @@ if (!defined('WPINC')) {
         <div class="tlp-view-link-url">
             <p class="tlp-login-url"><?php echo esc_url($login_url); ?></p>
             <button type="button" class="button tlp-copy-button" data-copy="<?php echo esc_attr($login_url); ?>">
-                <span class="dashicons dashicons-clipboard"></span> <?php _e('Copy', 'temporary-login-links-premium'); ?>
+                <span class="dashicons dashicons-clipboard"></span> <?php esc_html__('Copy', 'temporary-login-links-premium'); ?>
             </button>
-            <span class="tlp-copy-success" style="display: none;"><?php _e('Copied!', 'temporary-login-links-premium'); ?></span>
+            <span class="tlp-copy-success" style="display: none;"><?php esc_html__('Copied!', 'temporary-login-links-premium'); ?></span>
         </div>
         
         <!-- Link Details -->
         <div class="tlp-view-link-details">
-            <h3><?php _e('Link Details', 'temporary-login-links-premium'); ?></h3>
+            <h3><?php esc_html__('Link Details', 'temporary-login-links-premium'); ?></h3>
             
             <table class="tlp-view-link-details-table">
                 <tr>
-                    <th><?php _e('Status', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('Status', 'temporary-login-links-premium'); ?></th>
                     <td>
                         <?php 
                         if ($link['is_active'] == 0) {
-                            echo '<span class="tlp-status tlp-status-inactive">' . __('Inactive', 'temporary-login-links-premium') . '</span>';
+                            echo '<span class="tlp-status tlp-status-inactive">' . esc_html__('Inactive', 'temporary-login-links-premium') . '</span>';
                         } elseif (strtotime($link['expiry']) < time()) {
-                            echo '<span class="tlp-status tlp-status-expired">' . __('Expired', 'temporary-login-links-premium') . '</span>';
+                            echo '<span class="tlp-status tlp-status-expired">' . esc_html__('Expired', 'temporary-login-links-premium') . '</span>';
                         } else {
-                            echo '<span class="tlp-status tlp-status-active">' . __('Active', 'temporary-login-links-premium') . '</span>';
+                            echo '<span class="tlp-status tlp-status-active">' . esc_html__('Active', 'temporary-login-links-premium') . '</span>';
                         }
                         ?>
                     </td>
                 </tr>
                 
                 <tr>
-                    <th><?php _e('Expiry Date', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('Expiry Date', 'temporary-login-links-premium'); ?></th>
                     <td>
                         <?php 
                         echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($link['expiry']));
@@ -97,7 +101,8 @@ if (!defined('WPINC')) {
                             
                             echo ' (';
                             if ($days > 0) {
-                                echo sprintf(_n('%d day', '%d days', $days, 'temporary-login-links-premium'), $days);
+                                /* translators: Days */
+                                echo sprintf(esc_html__('%d day', '%d days', $days, 'temporary-login-links-premium'), $days);
                                 
                                 if ($hours > 0) {
                                     echo ', ';
@@ -105,7 +110,8 @@ if (!defined('WPINC')) {
                             }
                             
                             if ($hours > 0) {
-                                echo sprintf(_n('%d hour', '%d hours', $hours, 'temporary-login-links-premium'), $hours);
+                                /* translators: Hours */
+                                echo sprintf(esc_html__('%d hour', '%d hours', $hours, 'temporary-login-links-premium'), $hours);
                             }
                             echo ' ' . __('remaining', 'temporary-login-links-premium') . ')';
                         }
@@ -114,12 +120,12 @@ if (!defined('WPINC')) {
                 </tr>
                 
                 <tr>
-                    <th><?php _e('Created', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('Created', 'temporary-login-links-premium'); ?></th>
                     <td><?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($link['created_at'])); ?></td>
                 </tr>
                 
                 <tr>
-                    <th><?php _e('Created By', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('Created By', 'temporary-login-links-premium'); ?></th>
                     <td>
                         <?php 
                         $created_by_user = get_userdata($link['created_by']);
@@ -129,7 +135,7 @@ if (!defined('WPINC')) {
                 </tr>
                 
                 <tr>
-                    <th><?php _e('Access Count', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('Access Count', 'temporary-login-links-premium'); ?></th>
                     <td>
                         <?php 
                         echo $link['access_count'];
@@ -142,7 +148,7 @@ if (!defined('WPINC')) {
                 </tr>
                 
                 <tr>
-                    <th><?php _e('Last Accessed', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('Last Accessed', 'temporary-login-links-premium'); ?></th>
                     <td>
                         <?php 
                         if (!empty($link['last_accessed'])) {
@@ -155,25 +161,25 @@ if (!defined('WPINC')) {
                 </tr>
                 
                 <tr>
-                    <th><?php _e('Redirect URL', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('Redirect URL', 'temporary-login-links-premium'); ?></th>
                     <td><?php echo esc_url($link['redirect_to']); ?></td>
                 </tr>
                 
                 <tr>
-                    <th><?php _e('IP Restriction', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('IP Restriction', 'temporary-login-links-premium'); ?></th>
                     <td>
                         <?php 
                         if (!empty($link['ip_restriction'])) {
                             echo esc_html($link['ip_restriction']);
                         } else {
-                            echo __('None', 'temporary-login-links-premium');
+                            echo esc_html__('None', 'temporary-login-links-premium');
                         }
                         ?>
                     </td>
                 </tr>
                 
                 <tr>
-                    <th><?php _e('User', 'temporary-login-links-premium'); ?></th>
+                    <th><?php esc_html__('User', 'temporary-login-links-premium'); ?></th>
                     <td>
                         <?php 
                         if ($user) {
@@ -183,7 +189,7 @@ if (!defined('WPINC')) {
                                 esc_html($user->display_name . ' (' . $user->user_login . ')')
                             );
                         } else {
-                            echo __('User not found', 'temporary-login-links-premium');
+                            echo esc_html__('User not found', 'temporary-login-links-premium');
                         }
                         ?>
                     </td>
@@ -193,35 +199,35 @@ if (!defined('WPINC')) {
         
         <!-- Actions Section -->
         <div class="tlp-view-link-actions">
-            <h3><?php _e('Actions', 'temporary-login-links-premium'); ?></h3>
+            <h3><?php esc_html__('Actions', 'temporary-login-links-premium'); ?></h3>
             
             <div class="tlp-action-buttons">
                 <button type="button" class="button tlp-copy-button" data-copy="<?php echo esc_attr($login_url); ?>">
-                    <span class="dashicons dashicons-clipboard"></span> <?php _e('Copy Link', 'temporary-login-links-premium'); ?>
+                    <span class="dashicons dashicons-clipboard"></span> <?php esc_html__('Copy Link', 'temporary-login-links-premium'); ?>
                 </button>
                 
                 <button type="button" class="button tlp-resend-email" data-id="<?php echo $link_id; ?>">
-                    <span class="dashicons dashicons-email"></span> <?php _e('Resend Email', 'temporary-login-links-premium'); ?>
+                    <span class="dashicons dashicons-email"></span> <?php esc_html__('Resend Email', 'temporary-login-links-premium'); ?>
                 </button>
                 
                 <button type="button" class="button tlp-extend-link" data-id="<?php echo $link_id; ?>">
-                    <span class="dashicons dashicons-calendar-alt"></span> <?php _e('Extend Expiry', 'temporary-login-links-premium'); ?>
+                    <span class="dashicons dashicons-calendar-alt"></span> <?php esc_html__('Extend Expiry', 'temporary-login-links-premium'); ?>
                 </button>
             </div>
         </div>
         
         <!-- Access Logs -->
         <div class="tlp-access-logs">
-            <h3><?php _e('Access Logs', 'temporary-login-links-premium'); ?></h3>
+            <h3><?php esc_html__('Access Logs', 'temporary-login-links-premium'); ?></h3>
             
             <?php if (!empty($logs['items'])) : ?>
             <table class="widefat">
                 <thead>
                     <tr>
-                        <th><?php _e('Time', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('IP Address', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('Status', 'temporary-login-links-premium'); ?></th>
-                        <th><?php _e('Notes', 'temporary-login-links-premium'); ?></th>
+                        <th><?php esc_html__('Time', 'temporary-login-links-premium'); ?></th>
+                        <th><?php esc_html__('IP Address', 'temporary-login-links-premium'); ?></th>
+                        <th><?php esc_html__('Status', 'temporary-login-links-premium'); ?></th>
+                        <th><?php esc_html__('Notes', 'temporary-login-links-premium'); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -235,35 +241,35 @@ if (!defined('WPINC')) {
                             <?php 
                             switch ($log['status']) {
                                 case 'success':
-                                    echo '<span class="tlp-status tlp-status-active">' . __('Success', 'temporary-login-links-premium') . '</span>';
+                                    echo '<span class="tlp-status tlp-status-active">' . esc_html__('Success', 'temporary-login-links-premium') . '</span>';
                                     break;
                                     
                                 case 'expired':
-                                    echo '<span class="tlp-status tlp-status-expired">' . __('Expired', 'temporary-login-links-premium') . '</span>';
+                                    echo '<span class="tlp-status tlp-status-expired">' . esc_html__('Expired', 'temporary-login-links-premium') . '</span>';
                                     break;
                                     
                                 case 'inactive':
-                                    echo '<span class="tlp-status tlp-status-inactive">' . __('Inactive', 'temporary-login-links-premium') . '</span>';
+                                    echo '<span class="tlp-status tlp-status-inactive">' . esc_html__('Inactive', 'temporary-login-links-premium') . '</span>';
                                     break;
                                     
                                 case 'ip_restricted':
-                                    echo '<span class="tlp-status tlp-status-expired">' . __('IP Restricted', 'temporary-login-links-premium') . '</span>';
+                                    echo '<span class="tlp-status tlp-status-expired">' . esc_html__('IP Restricted', 'temporary-login-links-premium') . '</span>';
                                     break;
                                     
                                 case 'max_accesses':
-                                    echo '<span class="tlp-status tlp-status-expired">' . __('Max Accesses', 'temporary-login-links-premium') . '</span>';
+                                    echo '<span class="tlp-status tlp-status-expired">' . esc_html__('Max Accesses', 'temporary-login-links-premium') . '</span>';
                                     break;
 
                                 case 'extended':
-                                    echo '<span class="tlp-status tlp-status-active">' . __('Extended', 'temporary-login-links-premium') . '</span>';
+                                    echo '<span class="tlp-status tlp-status-active">' . esc_html__('Extended', 'temporary-login-links-premium') . '</span>';
                                     break;
                                     
                                 case 'activated':
-                                    echo '<span class="tlp-status tlp-status-active">' . __('Activated', 'temporary-login-links-premium') . '</span>';
+                                    echo '<span class="tlp-status tlp-status-active">' . esc_html__('Activated', 'temporary-login-links-premium') . '</span>';
                                     break;
                                     
                                 case 'deactivated':
-                                    echo '<span class="tlp-status tlp-status-inactive">' . __('Deactivated', 'temporary-login-links-premium') . '</span>';
+                                    echo '<span class="tlp-status tlp-status-inactive">' . esc_html__('Deactivated', 'temporary-login-links-premium') . '</span>';
                                     break;
                                     
                                 default:
@@ -301,7 +307,7 @@ if (!defined('WPINC')) {
             
             <?php else : ?>
             <div class="tlp-empty-logs">
-                <?php _e('No access logs found.', 'temporary-login-links-premium'); ?>
+                <?php esc_html__('No access logs found.', 'temporary-login-links-premium'); ?>
             </div>
             <?php endif; ?>
         </div>
@@ -312,25 +318,25 @@ if (!defined('WPINC')) {
 <div class="tlp-modal-backdrop" style="display: none;"></div>
 <div id="tlp-extend-modal" class="tlp-modal" style="display: none;">
     <div class="tlp-modal-header">
-        <h3><?php _e('Extend Expiry Date', 'temporary-login-links-premium'); ?></h3>
+        <h3><?php esc_html__('Extend Expiry Date', 'temporary-login-links-premium'); ?></h3>
         <span class="tlp-modal-close dashicons dashicons-no-alt"></span>
     </div>
     <div class="tlp-modal-content">
-        <p><?php _e('Choose how long to extend the expiry date:', 'temporary-login-links-premium'); ?></p>
+        <p><?php esc_html__('Choose how long to extend the expiry date:', 'temporary-login-links-premium'); ?></p>
         
         <select id="tlp-extend-duration" class="regular-text">
-            <option value="1 day"><?php _e('1 Day', 'temporary-login-links-premium'); ?></option>
-            <option value="3 days"><?php _e('3 Days', 'temporary-login-links-premium'); ?></option>
-            <option value="7 days" selected><?php _e('7 Days', 'temporary-login-links-premium'); ?></option>
-            <option value="14 days"><?php _e('14 Days', 'temporary-login-links-premium'); ?></option>
-            <option value="1 month"><?php _e('1 Month', 'temporary-login-links-premium'); ?></option>
-            <option value="3 months"><?php _e('3 Months', 'temporary-login-links-premium'); ?></option>
-            <option value="6 months"><?php _e('6 Months', 'temporary-login-links-premium'); ?></option>
-            <option value="1 year"><?php _e('1 Year', 'temporary-login-links-premium'); ?></option>
+            <option value="1 day"><?php esc_html__('1 Day', 'temporary-login-links-premium'); ?></option>
+            <option value="3 days"><?php esc_html__('3 Days', 'temporary-login-links-premium'); ?></option>
+            <option value="7 days" selected><?php esc_html__('7 Days', 'temporary-login-links-premium'); ?></option>
+            <option value="14 days"><?php esc_html__('14 Days', 'temporary-login-links-premium'); ?></option>
+            <option value="1 month"><?php esc_html__('1 Month', 'temporary-login-links-premium'); ?></option>
+            <option value="3 months"><?php esc_html__('3 Months', 'temporary-login-links-premium'); ?></option>
+            <option value="6 months"><?php esc_html__('6 Months', 'temporary-login-links-premium'); ?></option>
+            <option value="1 year"><?php esc_html__('1 Year', 'temporary-login-links-premium'); ?></option>
         </select>
     </div>
     <div class="tlp-modal-footer">
-        <button type="button" class="button tlp-modal-cancel"><?php _e('Cancel', 'temporary-login-links-premium'); ?></button>
-        <button type="button" class="button button-primary tlp-extend-link-submit" data-id="<?php echo $link_id; ?>"><?php _e('Extend', 'temporary-login-links-premium'); ?></button>
+        <button type="button" class="button tlp-modal-cancel"><?php esc_html__('Cancel', 'temporary-login-links-premium'); ?></button>
+        <button type="button" class="button button-primary tlp-extend-link-submit" data-id="<?php echo $link_id; ?>"><?php esc_html__('Extend', 'temporary-login-links-premium'); ?></button>
     </div>
 </div>

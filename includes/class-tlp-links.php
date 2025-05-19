@@ -206,6 +206,7 @@ class TLP_Links {
             
             // Validate date format (YYYY-MM-DD HH:MM:SS)
             if ( ! preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $custom_date ) ) {
+                /* translators: %s: Date format example */
                 return new WP_Error( 'invalid_date', __( 'Invalid date format. Please use YYYY-MM-DD HH:MM:SS.', 'temporary-login-links-premium' ) );
             }
             
@@ -658,25 +659,31 @@ class TLP_Links {
         $company_name = isset( $branding['company_name'] ) ? $branding['company_name'] : get_bloginfo( 'name' );
         
         // Prepare email content
+        /* translators: %s: Company name */
         $subject = sprintf( __( 'Temporary access to %s', 'temporary-login-links-premium' ), $company_name );
         
+        /* translators: %s: User's first name */
         $message = sprintf( __( "Hello%s,\n\n", 'temporary-login-links-premium' ), 
             ! empty( $args['first_name'] ) ? ' ' . $args['first_name'] : ''
         );
         
-        $message .= sprintf( __( "You have been granted temporary access to %s with %s privileges.\n\n", 'temporary-login-links-premium' ),
+        /* translators: 1: Site name, 2: User role */
+        $message .= sprintf( __( "You have been granted temporary access to %1\$s with %2\$s privileges.\n\n", 'temporary-login-links-premium' ),
             get_bloginfo( 'name' ),
             $this->get_role_display_name( $args['role'] )
         );
         
+        /* translators: %s: Login URL */
         $message .= sprintf( __( "You can log in using this link (no password required):\n%s\n\n", 'temporary-login-links-premium' ),
             $login_url
         );
         
+        /* translators: %s: Expiry date */
         $message .= sprintf( __( "This link will expire on %s.\n\n", 'temporary-login-links-premium' ),
             date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $expiry ) )
         );
         
+        /* translators: %s: Company name */
         $message .= sprintf( __( "Regards,\n%s Team", 'temporary-login-links-premium' ),
             $company_name
         );
@@ -734,11 +741,12 @@ class TLP_Links {
         $html .= '<div style="background-color: #f7f7f7; padding: 20px; border-radius: 5px;">';
         
         // Greeting
+        /* translators: %s: User's first name */
         $html .= '<p style="margin-bottom: 15px;">Hello' . ( ! empty( $args['first_name'] ) ? ' ' . esc_html( $args['first_name'] ) : '' ) . ',</p>';
         
         // Message
-        $html .= '<p style="margin-bottom: 15px;">' . sprintf( 
-            __( 'You have been granted temporary access to %s with %s privileges.', 'temporary-login-links-premium' ),
+        /* translators: 1: Site name, 2: User role */
+        $html .= '<p style="margin-bottom: 15px;">' . sprintf( __( 'You have been granted temporary access to %1$s with %2$s privileges.', 'temporary-login-links-premium' ),
             '<strong>' . esc_html( get_bloginfo( 'name' ) ) . '</strong>',
             '<strong>' . esc_html( $this->get_role_display_name( $args['role'] ) ) . '</strong>'
         ) . '</p>';
@@ -747,15 +755,15 @@ class TLP_Links {
         $html .= '<div style="text-align: center; margin: 30px 0;"><a href="' . esc_url( $login_url ) . '" style="display: inline-block; background-color: ' . esc_attr( $button_bg ) . '; color: ' . esc_attr( $button_text ) . '; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold;">' . __( 'Log In Now', 'temporary-login-links-premium' ) . '</a></div>';
         
         // Expiry notice
-        $html .= '<p style="margin-bottom: 15px;">' . sprintf( 
-            __( 'This link will expire on %s.', 'temporary-login-links-premium' ),
+        /* translators: %s: Expiry date */
+        $html .= '<p style="margin-bottom: 15px;">' . sprintf( __( 'This link will expire on %s.', 'temporary-login-links-premium' ),
             '<strong>' . date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $expiry ) ) . '</strong>'
         ) . '</p>';
         
         // Additional info if max accesses is set
         if ( ! empty( $args['max_accesses'] ) && $args['max_accesses'] > 0 ) {
-            $html .= '<p style="margin-bottom: 15px; font-style: italic;">' . sprintf( 
-                __( 'This link can only be used a maximum of %d times.', 'temporary-login-links-premium' ),
+            /* translators: %d: Maximum number of accesses */
+            $html .= '<p style="margin-bottom: 15px; font-style: italic;">' . sprintf( __( 'This link can only be used a maximum of %d times.', 'temporary-login-links-premium' ),
                 $args['max_accesses']
             ) . '</p>';
         }
@@ -764,6 +772,7 @@ class TLP_Links {
         
         // Footer
         $html .= '<div style="margin-top: 30px; text-align: center; font-size: 12px; color: #777;">';
+        /* translators: %s: Company name */
         $html .= '<p>' . sprintf( __( 'Regards,<br>%s Team', 'temporary-login-links-premium' ), esc_html( $company_name ) ) . '</p>';
         
         // Maybe add link URL as text for email clients that block images/buttons
@@ -885,6 +894,7 @@ class TLP_Links {
                     'user_agent'  => isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( $_SERVER['HTTP_USER_AGENT'] ) : '',
                     'accessed_at' => current_time( 'mysql' ),
                     'status'      => 'extended',
+                    /* translators: %s: The extended expiry date/time */
                     'notes'       => sprintf( __( 'Link expiry extended to %s.', 'temporary-login-links-premium' ), $expiry ),
                 ),
                 array( '%d', '%s', '%s', '%s', '%s', '%s' )
@@ -1190,6 +1200,7 @@ class TLP_Links {
                     'user_agent'  => isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field($_SERVER['HTTP_USER_AGENT']) : '',
                     'accessed_at' => current_time('mysql'),
                     'status'      => 'extended',
+                    /* translators: %s: The new expiry date/time */
                     'notes'       => sprintf(__('Link expiry updated to %s.', 'temporary-login-links-premium'), $new_expiry),
                 ),
                 array('%d', '%s', '%s', '%s', '%s', '%s')

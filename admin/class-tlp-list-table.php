@@ -249,22 +249,22 @@ class TLP_List_Table extends WP_List_Table {
                 $hours = floor($time_diff / 3600);
                 $minutes = floor(($time_diff % 3600) / 60);
                 
-                $time_remaining = sprintf(
-                    _n('%d hour', '%d hours', $hours, 'temporary-login-links-premium'),
+                /* translators: no of hours */
+                $time_remaining = sprintf(_n('%d hour', '%d hours', $hours, 'temporary-login-links-premium'),
                     $hours
                 );
                 
                 if ($minutes > 0) {
-                    $time_remaining .= ' ' . sprintf(
-                        _n('%d minute', '%d minutes', $minutes, 'temporary-login-links-premium'),
+                    /* translators: no of minutes */
+                    $time_remaining .= ' ' . sprintf(_n('%d minute', '%d minutes', $minutes, 'temporary-login-links-premium'),
                         $minutes
                     );
                 }
             } else { // More than a day
                 $days = floor($time_diff / 86400);
                 
-                $time_remaining = sprintf(
-                    _n('%d day', '%d days', $days, 'temporary-login-links-premium'),
+                /* translators: no of days */
+                $time_remaining = sprintf( _n('%d day', '%d days', $days, 'temporary-login-links-premium'),
                     $days
                 );
             }
@@ -657,6 +657,6 @@ class TLP_List_Table extends WP_List_Table {
      * @since    1.0.0
      */
     public function no_items() {
-        _e('No temporary login links found.', 'temporary-login-links-premium');
+        esc_html__('No temporary login links found.', 'temporary-login-links-premium');
     }
 }

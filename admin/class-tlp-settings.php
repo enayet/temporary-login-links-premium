@@ -203,7 +203,7 @@ class TLP_Settings {
         // Check capability
         $security = new TLP_Security();
         if (!$security->current_user_can_manage()) {
-            wp_die(__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
+            wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
         }
         
         // Get the active tab (default to general)

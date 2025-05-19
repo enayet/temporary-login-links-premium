@@ -89,7 +89,7 @@ class TLP_Shortcodes {
     public function temporary_login_link_shortcode($atts) {
         // Check user capabilities
         if (!current_user_can('manage_temporary_logins')) {
-            return '<div class="tlp-error">' . __('You do not have permission to create temporary login links.', 'temporary-login-links-premium') . '</div>';
+            return '<div class="tlp-error">' . esc_html__('You do not have permission to create temporary login links.', 'temporary-login-links-premium') . '</div>';
         }
         
         // Extract and validate attributes
@@ -102,8 +102,8 @@ class TLP_Shortcodes {
             'max_accesses' => 0,
             'redirect_to' => '',
             'ip_restriction' => '',
-            'button_text' => __('Create Login Link', 'temporary-login-links-premium'),
-            'success_text' => __('Login link created successfully. The link has been sent to the email address.', 'temporary-login-links-premium'),
+            'button_text' => esc_html__('Create Login Link', 'temporary-login-links-premium'),
+            'success_text' => esc_html__('Login link created successfully. The link has been sent to the email address.', 'temporary-login-links-premium'),
             'show_form' => 'true',
             'class' => '',
         ), $atts, 'temporary_login_link');
@@ -157,9 +157,9 @@ class TLP_Shortcodes {
         // Display link URL if available
         if (!empty($link_url)) {
             echo '<div class="tlp-link-url">';
-            echo '<strong>' . __('Login Link:', 'temporary-login-links-premium') . '</strong> ';
+            echo '<strong>' . esc_html__('Login Link:', 'temporary-login-links-premium') . '</strong> ';
             echo '<input type="text" value="' . esc_url($link_url) . '" readonly onclick="this.select();" class="tlp-link-input">';
-            echo '<button type="button" class="tlp-copy-link button" data-clipboard-text="' . esc_url($link_url) . '">' . __('Copy', 'temporary-login-links-premium') . '</button>';
+            echo '<button type="button" class="tlp-copy-link button" data-clipboard-text="' . esc_url($link_url) . '">' . esc_html__('Copy', 'temporary-login-links-premium') . '</button>';
             echo '</div>';
             
             // Add copy functionality
@@ -171,9 +171,9 @@ class TLP_Shortcodes {
                             var linkInput = document.querySelector(".tlp-link-input");
                             linkInput.select();
                             document.execCommand("copy");
-                            this.textContent = "' . esc_js(__('Copied!', 'temporary-login-links-premium')) . '";
+                            this.textContent = "' . esc_js(esc_html__('Copied!', 'temporary-login-links-premium')) . '";
                             setTimeout(function() {
-                                copyButton.textContent = "' . esc_js(__('Copy', 'temporary-login-links-premium')) . '";
+                                copyButton.textContent = "' . esc_js(esc_html__('Copy', 'temporary-login-links-premium')) . '";
                             }, 2000);
                         });
                     }
@@ -192,18 +192,18 @@ class TLP_Shortcodes {
             
             // Get expiry options
             $expiry_options = array(
-                '1 hour' => __('1 Hour', 'temporary-login-links-premium'),
-                '3 hours' => __('3 Hours', 'temporary-login-links-premium'),
-                '6 hours' => __('6 Hours', 'temporary-login-links-premium'),
-                '12 hours' => __('12 Hours', 'temporary-login-links-premium'),
-                '1 day' => __('1 Day', 'temporary-login-links-premium'),
-                '3 days' => __('3 Days', 'temporary-login-links-premium'),
-                '7 days' => __('7 Days', 'temporary-login-links-premium'),
-                '14 days' => __('14 Days', 'temporary-login-links-premium'),
-                '1 month' => __('1 Month', 'temporary-login-links-premium'),
-                '3 months' => __('3 Months', 'temporary-login-links-premium'),
-                '6 months' => __('6 Months', 'temporary-login-links-premium'),
-                '1 year' => __('1 Year', 'temporary-login-links-premium'),
+                '1 hour' => esc_html__('1 Hour', 'temporary-login-links-premium'),
+                '3 hours' => esc_html__('3 Hours', 'temporary-login-links-premium'),
+                '6 hours' => esc_html__('6 Hours', 'temporary-login-links-premium'),
+                '12 hours' => esc_html__('12 Hours', 'temporary-login-links-premium'),
+                '1 day' => esc_html__('1 Day', 'temporary-login-links-premium'),
+                '3 days' => esc_html__('3 Days', 'temporary-login-links-premium'),
+                '7 days' => esc_html__('7 Days', 'temporary-login-links-premium'),
+                '14 days' => esc_html__('14 Days', 'temporary-login-links-premium'),
+                '1 month' => esc_html__('1 Month', 'temporary-login-links-premium'),
+                '3 months' => esc_html__('3 Months', 'temporary-login-links-premium'),
+                '6 months' => esc_html__('6 Months', 'temporary-login-links-premium'),
+                '1 year' => esc_html__('1 Year', 'temporary-login-links-premium'),
             );
             
             // Default expiry
@@ -216,25 +216,25 @@ class TLP_Shortcodes {
             
             // Email field
             echo '<div class="tlp-form-field">';
-            echo '<label for="tlp_email">' . __('Email Address', 'temporary-login-links-premium') . ' <span class="required">*</span></label>';
+            echo '<label for="tlp_email">' . esc_html__('Email Address', 'temporary-login-links-premium') . ' <span class="required">*</span></label>';
             echo '<input type="email" name="tlp_email" id="tlp_email" value="' . esc_attr($atts['email']) . '" required>';
             echo '</div>';
             
             // First Name field
             echo '<div class="tlp-form-field">';
-            echo '<label for="tlp_first_name">' . __('First Name', 'temporary-login-links-premium') . '</label>';
+            echo '<label for="tlp_first_name">' . esc_html__('First Name', 'temporary-login-links-premium') . '</label>';
             echo '<input type="text" name="tlp_first_name" id="tlp_first_name" value="' . esc_attr($atts['first_name']) . '">';
             echo '</div>';
             
             // Last Name field
             echo '<div class="tlp-form-field">';
-            echo '<label for="tlp_last_name">' . __('Last Name', 'temporary-login-links-premium') . '</label>';
+            echo '<label for="tlp_last_name">' . esc_html__('Last Name', 'temporary-login-links-premium') . '</label>';
             echo '<input type="text" name="tlp_last_name" id="tlp_last_name" value="' . esc_attr($atts['last_name']) . '">';
             echo '</div>';
             
             // Role field
             echo '<div class="tlp-form-field">';
-            echo '<label for="tlp_role">' . __('User Role', 'temporary-login-links-premium') . ' <span class="required">*</span></label>';
+            echo '<label for="tlp_role">' . esc_html__('User Role', 'temporary-login-links-premium') . ' <span class="required">*</span></label>';
             echo '<select name="tlp_role" id="tlp_role" required>';
             foreach ($roles as $role_key => $role_name) {
                 echo '<option value="' . esc_attr($role_key) . '" ' . selected($default_role, $role_key, false) . '>' . esc_html($role_name) . '</option>';
@@ -244,7 +244,7 @@ class TLP_Shortcodes {
             
             // Expiry field
             echo '<div class="tlp-form-field">';
-            echo '<label for="tlp_expiry">' . __('Expiration', 'temporary-login-links-premium') . ' <span class="required">*</span></label>';
+            echo '<label for="tlp_expiry">' . esc_html__('Expiration', 'temporary-login-links-premium') . ' <span class="required">*</span></label>';
             echo '<select name="tlp_expiry" id="tlp_expiry" required>';
             foreach ($expiry_options as $expiry_key => $expiry_name) {
                 echo '<option value="' . esc_attr($expiry_key) . '" ' . selected($default_expiry, $expiry_key, false) . '>' . esc_html($expiry_name) . '</option>';
@@ -278,8 +278,8 @@ class TLP_Shortcodes {
         // Extract and validate attributes
         $atts = shortcode_atts(array(
             'redirect' => '',
-            'message' => __('Enter your temporary login token to access the site.', 'temporary-login-links-premium'),
-            'button_text' => __('Access Site', 'temporary-login-links-premium'),
+            'message' => esc_html__('Enter your temporary login token to access the site.', 'temporary-login-links-premium'),
+            'button_text' => esc_html__('Access Site', 'temporary-login-links-premium'),
             'class' => '',
         ), $atts, 'temporary_login_form');
         
@@ -295,7 +295,7 @@ class TLP_Shortcodes {
             $token = isset($_POST['tlp_token']) ? sanitize_text_field($_POST['tlp_token']) : '';
             
             if (empty($token)) {
-                $error = __('Please enter a login token.', 'temporary-login-links-premium');
+                $error = esc_html__('Please enter a login token.', 'temporary-login-links-premium');
             } else {
                 // Validate the token
                 $result = $this->links->validate_login_token($token);
@@ -323,7 +323,7 @@ class TLP_Shortcodes {
                         wp_redirect($redirect_url);
                         exit;
                     } else {
-                        $error = __('User not found.', 'temporary-login-links-premium');
+                        $error = esc_html__('User not found.', 'temporary-login-links-premium');
                     }
                 }
             }
@@ -351,7 +351,7 @@ class TLP_Shortcodes {
         
         // Token field
         echo '<div class="tlp-form-field">';
-        echo '<label for="tlp_token">' . __('Login Token', 'temporary-login-links-premium') . ' <span class="required">*</span></label>';
+        echo '<label for="tlp_token">' . esc_html__('Login Token', 'temporary-login-links-premium') . ' <span class="required">*</span></label>';
         echo '<input type="text" name="tlp_token" id="tlp_token" required>';
         echo '</div>';
         
@@ -391,21 +391,21 @@ class TLP_Shortcodes {
         
         // Check if user is logged in
         if (!$current_user->exists()) {
-            return '<div class="tlp-error">' . __('You need to be logged in to view this information.', 'temporary-login-links-premium') . '</div>';
+            return '<div class="tlp-error">' . esc_html__('You need to be logged in to view this information.', 'temporary-login-links-premium') . '</div>';
         }
         
         // Check if user is a temporary user
         $link_id = get_user_meta($current_user->ID, 'temporary_login_links_premium_user', true);
         
         if (empty($link_id)) {
-            return '<div class="tlp-notice">' . __('You are not accessing the site via a temporary login link.', 'temporary-login-links-premium') . '</div>';
+            return '<div class="tlp-notice">' . esc_html__('You are not accessing the site via a temporary login link.', 'temporary-login-links-premium') . '</div>';
         }
         
         // Get link details
         $link = $this->links->get_link($link_id);
         
         if (!$link) {
-            return '<div class="tlp-error">' . __('Temporary login information not found.', 'temporary-login-links-premium') . '</div>';
+            return '<div class="tlp-error">' . esc_html__('Temporary login information not found.', 'temporary-login-links-premium') . '</div>';
         }
         
         // Start output buffering
@@ -414,7 +414,7 @@ class TLP_Shortcodes {
         echo '<div class="tlp-user-info ' . esc_attr($atts['class']) . '">';
         
         // Add heading
-        echo '<h4 class="tlp-info-heading">' . __('Temporary Access Information', 'temporary-login-links-premium') . '</h4>';
+        echo '<h4 class="tlp-info-heading">' . esc_html__('Temporary Access Information', 'temporary-login-links-premium') . '</h4>';
         
         echo '<ul class="tlp-info-list">';
         
@@ -425,7 +425,7 @@ class TLP_Shortcodes {
             
             // Check if expired
             if (strtotime($link['expiry']) < time()) {
-                $expiry_status = ' <span class="tlp-status tlp-status-expired">' . __('Expired', 'temporary-login-links-premium') . '</span>';
+                $expiry_status = ' <span class="tlp-status tlp-status-expired">' . esc_html__('Expired', 'temporary-login-links-premium') . '</span>';
             } else {
                 // Calculate time remaining
                 $time_diff = strtotime($link['expiry']) - time();
@@ -433,46 +433,47 @@ class TLP_Shortcodes {
                 $hours_remaining = floor(($time_diff % (60 * 60 * 24)) / (60 * 60));
                 
                 if ($days_remaining > 0) {
-                    $time_remaining = sprintf(
-                        _n('%d day', '%d days', $days_remaining, 'temporary-login-links-premium'),
+                    /* translators: %d days  */
+                    $time_remaining = sprintf(_n('%d day', '%d days', $days_remaining, 'temporary-login-links-premium'),
                         $days_remaining
                     );
                     
                     if ($hours_remaining > 0) {
-                        $time_remaining .= ' ' . sprintf(
-                            _n('%d hour', '%d hours', $hours_remaining, 'temporary-login-links-premium'),
+                        /* translators: %d hours  */
+                        $time_remaining .= ' ' . sprintf(_n('%d hour', '%d hours', $hours_remaining, 'temporary-login-links-premium'),
                             $hours_remaining
                         );
                     }
                 } else {
-                    $time_remaining = sprintf(
-                        _n('%d hour', '%d hours', $hours_remaining, 'temporary-login-links-premium'),
+                    /* translators: %d hours  */
+                    $time_remaining = sprintf(_n('%d hour', '%d hours', $hours_remaining, 'temporary-login-links-premium'),
                         $hours_remaining
                     );
                 }
                 
-                $expiry_status = ' <span class="tlp-status tlp-status-active">' . sprintf(__('(%s remaining)', 'temporary-login-links-premium'), $time_remaining) . '</span>';
+                /* translators: %s time remaining  */
+                $expiry_status = ' <span class="tlp-status tlp-status-active">' . sprintf(esc_html__('(%s remaining)', 'temporary-login-links-premium'), $time_remaining) . '</span>';
             }
             
-            echo '<li class="tlp-info-expiry"><strong>' . __('Access Expires:', 'temporary-login-links-premium') . '</strong> ' . esc_html($expiry_date) . $expiry_status . '</li>';
+            echo '<li class="tlp-info-expiry"><strong>' . esc_html__('Access Expires:', 'temporary-login-links-premium') . '</strong> ' . esc_html($expiry_date) . $expiry_status . '</li>';
         }
         
         // Show role
         if ($atts['show_role'] === 'true') {
             $role_name = $this->get_role_display_name($link['role']);
-            echo '<li class="tlp-info-role"><strong>' . __('Access Level:', 'temporary-login-links-premium') . '</strong> ' . esc_html($role_name) . '</li>';
+            echo '<li class="tlp-info-role"><strong>' . esc_html__('Access Level:', 'temporary-login-links-premium') . '</strong> ' . esc_html($role_name) . '</li>';
         }
         
         // Show creation date
         if ($atts['show_created'] === 'true') {
             $created_date = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($link['created_at']));
-            echo '<li class="tlp-info-created"><strong>' . __('Access Granted:', 'temporary-login-links-premium') . '</strong> ' . esc_html($created_date) . '</li>';
+            echo '<li class="tlp-info-created"><strong>' . esc_html__('Access Granted:', 'temporary-login-links-premium') . '</strong> ' . esc_html($created_date) . '</li>';
         }
         
         // Show access count
         if ($atts['show_accesses'] === 'true') {
             $max_accesses = $link['max_accesses'] > 0 ? ' / ' . esc_html($link['max_accesses']) : '';
-            echo '<li class="tlp-info-accesses"><strong>' . __('Access Count:', 'temporary-login-links-premium') . '</strong> ' . esc_html($link['access_count']) . $max_accesses . '</li>';
+            echo '<li class="tlp-info-accesses"><strong>' . esc_html__('Access Count:', 'temporary-login-links-premium') . '</strong> ' . esc_html($link['access_count']) . $max_accesses . '</li>';
         }
         
         echo '</ul>';
@@ -551,7 +552,7 @@ class TLP_Shortcodes {
         // Extract and validate attributes
         $atts = shortcode_atts(array(
             'format' => get_option('date_format') . ' ' . get_option('time_format'),
-            'expired_text' => __('Your access has expired.', 'temporary-login-links-premium'),
+            'expired_text' => esc_html__('Your access has expired.', 'temporary-login-links-premium'),
             'show_remaining' => 'true',
             'class' => '',
         ), $atts, 'temporary_user_expiry');
@@ -596,25 +597,26 @@ class TLP_Shortcodes {
             $hours_remaining = floor(($time_diff % (60 * 60 * 24)) / (60 * 60));
             
             if ($days_remaining > 0) {
-                $time_remaining = sprintf(
-                    _n('%d day', '%d days', $days_remaining, 'temporary-login-links-premium'),
+                /* translators: %d days  */
+                $time_remaining = sprintf(_n('%d day', '%d days', $days_remaining, 'temporary-login-links-premium'),
                     $days_remaining
                 );
                 
                 if ($hours_remaining > 0) {
-                    $time_remaining .= ' ' . sprintf(
-                        _n('%d hour', '%d hours', $hours_remaining, 'temporary-login-links-premium'),
+                    /* translators: %d hours  */
+                    $time_remaining .= ' ' . sprintf(_n('%d hour', '%d hours', $hours_remaining, 'temporary-login-links-premium'),
                         $hours_remaining
                     );
                 }
             } else {
-                $time_remaining = sprintf(
-                    _n('%d hour', '%d hours', $hours_remaining, 'temporary-login-links-premium'),
+                /* translators: %s hours  */
+                $time_remaining = sprintf(_n('%d hour', '%d hours', $hours_remaining, 'temporary-login-links-premium'),
                     $hours_remaining
                 );
             }
             
-            $remaining_text = ' <span class="tlp-remaining-time">(' . sprintf(__('%s remaining', 'temporary-login-links-premium'), $time_remaining) . ')</span>';
+            /* translators: %s time remaining  */
+            $remaining_text = ' <span class="tlp-remaining-time">(' . sprintf(esc_html__('%s remaining', 'temporary-login-links-premium'), $time_remaining) . ')</span>';
         }
         
         return '<span class="tlp-expiry-date ' . esc_attr($atts['class']) . '">' . esc_html($expiry_date) . $remaining_text . '</span>';
@@ -632,7 +634,7 @@ class TLP_Shortcodes {
     public function temporary_links_list_shortcode($atts) {
         // Check user capabilities
         if (!current_user_can('manage_temporary_logins')) {
-            return '<div class="tlp-error">' . __('You do not have permission to view temporary login links.', 'temporary-login-links-premium') . '</div>';
+            return '<div class="tlp-error">' . esc_html__('You do not have permission to view temporary login links.', 'temporary-login-links-premium') . '</div>';
         }
         
         // Extract and validate attributes
@@ -675,16 +677,16 @@ class TLP_Shortcodes {
         echo '<div class="tlp-links-list ' . esc_attr($atts['class']) . '">';
         
         if (empty($links)) {
-            echo '<div class="tlp-notice">' . __('No temporary login links found.', 'temporary-login-links-premium') . '</div>';
+            echo '<div class="tlp-notice">' . esc_html__('No temporary login links found.', 'temporary-login-links-premium') . '</div>';
         } else {
             echo '<table class="tlp-links-table">';
             echo '<thead>';
             echo '<tr>';
-            echo '<th>' . __('Email', 'temporary-login-links-premium') . '</th>';
-            echo '<th>' . __('Role', 'temporary-login-links-premium') . '</th>';
-            echo '<th>' . __('Expiry', 'temporary-login-links-premium') . '</th>';
-            echo '<th>' . __('Status', 'temporary-login-links-premium') . '</th>';
-            echo '<th>' . __('Actions', 'temporary-login-links-premium') . '</th>';
+            echo '<th>' . esc_html__('Email', 'temporary-login-links-premium') . '</th>';
+            echo '<th>' . esc_html__('Role', 'temporary-login-links-premium') . '</th>';
+            echo '<th>' . esc_html__('Expiry', 'temporary-login-links-premium') . '</th>';
+            echo '<th>' . esc_html__('Status', 'temporary-login-links-premium') . '</th>';
+            echo '<th>' . esc_html__('Actions', 'temporary-login-links-premium') . '</th>';
             echo '</tr>';
             echo '</thead>';
             echo '<tbody>';
@@ -708,13 +710,13 @@ class TLP_Shortcodes {
                 
                 if ($link['is_active'] == 0) {
                     $status_class = 'inactive';
-                    $status_text = __('Inactive', 'temporary-login-links-premium');
+                    $status_text = esc_html__('Inactive', 'temporary-login-links-premium');
                 } elseif (strtotime($link['expiry']) < time()) {
                     $status_class = 'expired';
-                    $status_text = __('Expired', 'temporary-login-links-premium');
+                    $status_text = esc_html__('Expired', 'temporary-login-links-premium');
                 } else {
                     $status_class = 'active';
-                    $status_text = __('Active', 'temporary-login-links-premium');
+                    $status_text = esc_html__('Active', 'temporary-login-links-premium');
                 }
                 
                 echo '<td><span class="tlp-status tlp-status-' . esc_attr($status_class) . '">' . esc_html($status_text) . '</span></td>';
@@ -724,10 +726,10 @@ class TLP_Shortcodes {
                 
                 // View link
                 $admin_url = admin_url('admin.php?page=temporary-login-links-premium-links&action=view&id=' . $link['id']);
-                echo '<a href="' . esc_url($admin_url) . '" class="button button-small">' . __('View', 'temporary-login-links-premium') . '</a>';
+                echo '<a href="' . esc_url($admin_url) . '" class="button button-small">' . esc_html__('View', 'temporary-login-links-premium') . '</a>';
                 
                 // Copy link button (using data attribute)
-                echo ' <button type="button" class="button button-small tlp-copy-link-btn" data-clipboard-text="' . esc_url($this->links->get_login_url($link['link_token'])) . '">' . __('Copy Link', 'temporary-login-links-premium') . '</button>';
+                echo ' <button type="button" class="button button-small tlp-copy-link-btn" data-clipboard-text="' . esc_url($this->links->get_login_url($link['link_token'])) . '">' . esc_html__('Copy Link', 'temporary-login-links-premium') . '</button>';
                 
                 echo '</td>';
                 echo '</tr>';
@@ -751,7 +753,7 @@ class TLP_Shortcodes {
                             document.body.removeChild(tempInput);
                             
                             var originalText = this.textContent;
-                            this.textContent = "' . esc_js(__('Copied!', 'temporary-login-links-premium')) . '";
+                            this.textContent = "' . esc_js(esc_html__('Copied!', 'temporary-login-links-premium')) . '";
                             
                             var btn = this;
                             setTimeout(function() {

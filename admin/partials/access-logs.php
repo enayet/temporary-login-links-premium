@@ -31,8 +31,8 @@ if (!defined('WPINC')) {
         if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
             $count = isset($_GET['count']) ? intval($_GET['count']) : 0;
             echo '<div class="notice notice-success is-dismissible"><p>' . 
-                sprintf(
-                    _n('%d log entry has been deleted successfully.', '%d log entries have been deleted successfully.', $count, 'temporary-login-links-premium'),
+                /* translators: %d no of log entry  */   
+                sprintf(_n('%d log entry has been deleted successfully.', '%d log entries have been deleted successfully.', $count, 'temporary-login-links-premium'),
                     $count
                 ) . '</p></div>';
         }
@@ -94,8 +94,9 @@ if (!defined('WPINC')) {
             <?php if ($logs['total_items'] > 0) : ?>
                 <div class="tablenav-pages">
                     <span class="displaying-num">
-                        <?php printf(
-                            _n('%s item', '%s items', $logs['total_items'], 'temporary-login-links-premium'),
+                        <?php
+                            /* translators: %s items  */   
+                            printf(_n('%s item', '%s items', $logs['total_items'], 'temporary-login-links-premium'),
                             number_format_i18n($logs['total_items'])
                         ); ?>
                     </span>
@@ -245,8 +246,9 @@ if (!defined('WPINC')) {
                 <?php if ($logs['total_items'] > 0) : ?>
                     <div class="tablenav-pages">
                         <span class="displaying-num">
-                            <?php printf(
-                                _n('%s item', '%s items', $logs['total_items'], 'temporary-login-links-premium'),
+                            <?php
+                                /* translators: %s items  */   
+                                printf(_n('%s item', '%s items', $logs['total_items'], 'temporary-login-links-premium'),
                                 number_format_i18n($logs['total_items'])
                             ); ?>
                         </span>

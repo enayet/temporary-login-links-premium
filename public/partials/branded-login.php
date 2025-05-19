@@ -66,7 +66,7 @@ $is_max_accesses = $link['max_accesses'] > 0 && $link['access_count'] >= $link['
 
 // Default values
 $company_name = isset($branding['company_name']) ? $branding['company_name'] : get_bloginfo('name');
-$welcome_text = isset($branding['login_welcome_text']) ? $branding['login_welcome_text'] : __('Welcome! You have been granted temporary access to this site.', 'temporary-login-links-premium');
+$welcome_text = isset($branding['login_welcome_text']) ? $branding['login_welcome_text'] : esc_html__('Welcome! You have been granted temporary access to this site.', 'temporary-login-links-premium');
 $background_color = isset($branding['login_background_color']) ? $branding['login_background_color'] : '#f1f1f1';
 $form_background = isset($branding['login_form_background']) ? $branding['login_form_background'] : '#ffffff';
 $form_text_color = isset($branding['login_form_text_color']) ? $branding['login_form_text_color'] : '#333333';
@@ -141,7 +141,7 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo esc_html($company_name); ?> - <?php _e('Temporary Access', 'temporary-login-links-premium'); ?></title>
+    <title><?php echo esc_html($company_name); ?> - <?php esc_html__('Temporary Access', 'temporary-login-links-premium'); ?></title>
     <?php wp_head(); ?>
     <style>
         body {
@@ -301,15 +301,17 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
                 <div class="tlp-user-info">
                     <p>
                         <?php 
-                        $greeting = !empty($user_data['first_name']) 
-                            ? sprintf(__('Hello, %s!', 'temporary-login-links-premium'), esc_html($user_data['first_name'])) 
-                            : __('Hello!', 'temporary-login-links-premium');
+                        
+                        /* translators: %s First name  */
+                        $greeting = !empty($user_data['first_name']) ? sprintf(esc_html__('Hello, %s!', 'temporary-login-links-premium'), esc_html($user_data['first_name'])) : esc_html__('Hello!', 'temporary-login-links-premium');
                         echo $greeting;
                         ?>
                     </p>
                     <p>
-                        <?php printf(
-                            __('You have been granted temporary access to %s with %s privileges.', 'temporary-login-links-premium'),
+                        <?php 
+                        
+                            /* translators: Company name and Role  */
+                            printf(esc_html__('You have been granted temporary access to %1$s with %2$s privileges.', 'temporary-login-links-premium'),
                             '<strong>' . esc_html(get_bloginfo('name')) . '</strong>',
                             '<strong>' . esc_html(get_role_display_name($user_data['role'])) . '</strong>'
                         ); ?>
@@ -317,50 +319,54 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
                 </div>
                 
                 <div class="tlp-access-info tlp-access-active">
-                    <p style="margin: 0;"><?php _e('Your temporary login link is valid and ready to use.', 'temporary-login-links-premium'); ?></p>
+                    <p style="margin: 0;"><?php esc_html__('Your temporary login link is valid and ready to use.', 'temporary-login-links-premium'); ?></p>
                 </div>
                 
                 <div class="tlp-access-cta">
                     <a href="<?php echo esc_url($auto_login_url); ?>" class="tlp-button">
-                        <?php _e('Access Site', 'temporary-login-links-premium'); ?>
+                        <?php esc_html__('Access Site', 'temporary-login-links-premium'); ?>
                     </a>
                 </div>
                 
                 <div class="tlp-expiry-info">
-                    <?php printf(
-                        __('This link will expire on %s.', 'temporary-login-links-premium'),
+                    <?php 
+                        /* translators: %s expiry date  */
+                        printf(esc_html__('This link will expire on %s.', 'temporary-login-links-premium'),
                         '<strong>' . date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($link['expiry'])) . '</strong>'
                     ); ?>
                     
                     <?php if ($link['max_accesses'] > 0) : ?>
                         <br>
-                        <?php printf(
-                            __('This link can be used %d more time(s).', 'temporary-login-links-premium'),
+                        <?php 
+                            /* translators: %d max accesses  */
+                            printf(esc_html__('This link can be used %d more time(s).', 'temporary-login-links-premium'),
                             $link['max_accesses'] - $link['access_count']
                         ); ?>
                     <?php endif; ?>
                 </div>
             <?php elseif (!$is_active) : ?>
                 <div class="tlp-access-info tlp-access-inactive">
-                    <p style="margin: 0;"><?php _e('This login link has been deactivated.', 'temporary-login-links-premium'); ?></p>
+                    <p style="margin: 0;"><?php esc_html__('This login link has been deactivated.', 'temporary-login-links-premium'); ?></p>
                 </div>
             <?php elseif ($is_expired) : ?>
                 <div class="tlp-access-info tlp-access-inactive">
-                    <p style="margin: 0;"><?php _e('This login link has expired.', 'temporary-login-links-premium'); ?></p>
+                    <p style="margin: 0;"><?php esc_html__('This login link has expired.', 'temporary-login-links-premium'); ?></p>
                 </div>
             <?php elseif ($is_max_accesses) : ?>
                 <div class="tlp-access-info tlp-access-inactive">
-                    <p style="margin: 0;"><?php _e('This login link has reached its maximum number of uses.', 'temporary-login-links-premium'); ?></p>
+                    <p style="margin: 0;"><?php esc_html__('This login link has reached its maximum number of uses.', 'temporary-login-links-premium'); ?></p>
                 </div>
             <?php else : ?>
                 <div class="tlp-access-info tlp-access-inactive">
-                    <p style="margin: 0;"><?php _e('There was an issue with this login link.', 'temporary-login-links-premium'); ?></p>
+                    <p style="margin: 0;"><?php esc_html__('There was an issue with this login link.', 'temporary-login-links-premium'); ?></p>
                 </div>
             <?php endif; ?>
         </div>
         
         <div class="tlp-footer">
-            <p><?php printf(__('&copy; %s %s', 'temporary-login-links-premium'), date('Y'), esc_html($company_name)); ?></p>
+            <p><?php 
+                /* translators: Year and company name  */
+                printf(esc_html__('&copy; %$1s %$2s', 'temporary-login-links-premium'), date('Y'), esc_html($company_name)); ?></p>
         </div>
     </div>
     

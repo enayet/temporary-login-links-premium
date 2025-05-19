@@ -401,17 +401,25 @@ class TLP_Public {
         $admin_email = get_option('admin_email');
         
         // Prepare email content
+        /* translators: %s Company name  */
         $subject = sprintf(__('[%s] Temporary Login Used', 'temporary-login-links-premium'), get_bloginfo('name'));
         
+        /* translators: %s Company name  */
         $message = sprintf(__("Hello,\n\nThis is a notification that a temporary login link has been used on your website %s.\n\n", 'temporary-login-links-premium'), get_bloginfo('name'));
         
+        /* translators: %s User Email  */   
         $message .= sprintf(__("User Email: %s\n", 'temporary-login-links-premium'), $user->user_email);
+        /* translators: %s User Role  */   
         $message .= sprintf(__("User Role: %s\n", 'temporary-login-links-premium'), $this->get_role_display_name($user->roles[0]));
+        /* translators: %s Login time  */
         $message .= sprintf(__("Login Time: %s\n", 'temporary-login-links-premium'), current_time('mysql'));
+        /* translators: %s IP address  */
         $message .= sprintf(__("IP Address: %s\n\n", 'temporary-login-links-premium'), $this->security->get_client_ip());
         
+        /* translators: %s Temporary links  */   
         $message .= sprintf(__("You can view all temporary links here: %s\n\n", 'temporary-login-links-premium'), admin_url('admin.php?page=temporary-login-links-premium-links'));
         
+        /* translators: %s Company Name  */   
         $message .= sprintf(__("Regards,\n%s Team", 'temporary-login-links-premium'), get_bloginfo('name'));
         
         // Send the email
@@ -584,6 +592,7 @@ class TLP_Public {
             // Add expiry info
             $expiry_date = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($link->expiry));
             $temp_message .= '<p class="tlp-expiry-info">';
+            /* translators: %s Expiry Date  */   
             $temp_message .= sprintf(__('This link will expire on: %s', 'temporary-login-links-premium'), '<strong>' . $expiry_date . '</strong>');
             $temp_message .= '</p>';
             

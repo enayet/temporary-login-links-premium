@@ -35,7 +35,7 @@ class Temporary_Login_Links_Premium_Activator {
         if (version_compare(PHP_VERSION, '7.0', '<')) {
             deactivate_plugins(TEMPORARY_LOGIN_LINKS_PREMIUM_BASENAME);
             wp_die(
-                __('Temporary Login Links Premium requires PHP 7.0 or higher.', 'temporary-login-links-premium'),
+                esc_html__('Temporary Login Links Premium requires PHP 7.0 or higher.', 'temporary-login-links-premium'),
                 'Plugin Activation Error',
                 array('back_link' => true)
             );
@@ -46,7 +46,7 @@ class Temporary_Login_Links_Premium_Activator {
         if ( version_compare( get_bloginfo( 'version' ), '5.0', '<' ) ) {
             deactivate_plugins( TEMPORARY_LOGIN_LINKS_PREMIUM_BASENAME );
             wp_die( 
-                __( 'Temporary Login Links Premium requires WordPress 5.0 or higher.', 'temporary-login-links-premium' ), 
+                esc_html__( 'Temporary Login Links Premium requires WordPress 5.0 or higher.', 'temporary-login-links-premium' ), 
                 'Plugin Activation Error', 
                 array( 'back_link' => true ) 
             );
@@ -174,7 +174,7 @@ class Temporary_Login_Links_Premium_Activator {
             'login_button_color'         => '#0085ba',
             'login_button_text_color'    => '#ffffff',
             'login_custom_css'           => '',
-            'login_welcome_text'         => __( 'Welcome! You have been granted temporary access to this site.', 'temporary-login-links-premium' ),
+            'login_welcome_text' => esc_html__( 'Welcome! You have been granted temporary access to this site.', 'temporary-login-links-premium' ),
             'company_name'               => get_bloginfo( 'name' ),
             'email_branding'             => 1,
         );

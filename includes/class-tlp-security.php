@@ -106,8 +106,8 @@ class TLP_Security {
         if (isset($_REQUEST['action']) && in_array($_REQUEST['action'], $actions_requiring_nonce)) {
             // Verify nonce
             if (!isset($_REQUEST['_wpnonce']) || !wp_verify_nonce($_REQUEST['_wpnonce'], 'tlp_' . $_REQUEST['action'])) {
-                wp_die(__('Security check failed. Please try again.', 'temporary-login-links-premium'), 
-                       __('Security Error', 'temporary-login-links-premium'), 
+                wp_die(esc_html__('Security check failed. Please try again.', 'temporary-login-links-premium'), 
+                       esc_html__('Security Error', 'temporary-login-links-premium'), 
                        array('response' => 403, 'back_link' => true));
             }
         }
@@ -252,12 +252,11 @@ class TLP_Security {
                 sprintf('IP blocked due to too many failed attempts. %d minutes remaining.', $minutes)
             );
             
-            wp_die(
-                sprintf(
-                    __('Too many failed login attempts from your IP address. Please try again in %d minutes.', 'temporary-login-links-premium'),
-                    $minutes
+            /* translators: Security error message */
+            wp_die( sprintf(esc_html__('Too many failed login attempts from your IP address. Please try again in %d minutes.', 'temporary-login-links-premium'),
+                    absint($minutes) // Using absint() to sanitize the numeric value
                 ),
-                __('Temporary Access Blocked', 'temporary-login-links-premium'),
+                esc_html__('Temporary Access Blocked', 'temporary-login-links-premium'),
                 array('response' => 403)
             );
         }
@@ -350,8 +349,8 @@ class TLP_Security {
         $ips = array_map('trim', explode(',', $ip_restriction));
         
         foreach ($ips as $ip) {
-            if (!$this->is_valid_ip($ip)) {
-                return sprintf(__('Invalid IP address: %s', 'temporary-login-links-premium'), $ip);
+            /* translators: Invalid IP address */
+            if (!$this->is_valid_ip($ip)) { return sprintf(__('Invalid IP address: %s', 'temporary-login-links-premium'), $ip);
             }
         }
         
@@ -408,23 +407,23 @@ class TLP_Security {
         $admin_email = get_option('admin_email');
         
         // Prepare email content
-        $subject = sprintf(
-            __('[%s] Suspicious temporary login activity detected', 'temporary-login-links-premium'),
+        /* translators: Suspicious login */
+        $subject = sprintf(__('[%s] Suspicious temporary login activity detected', 'temporary-login-links-premium'),
             get_bloginfo('name')
         );
         
-        $message = sprintf(
-            __("Multiple failed temporary login attempts have been detected from IP: %s\n\n", 'temporary-login-links-premium'),
+        /* translators: Failed attempts */
+        $message = sprintf(__("Multiple failed temporary login attempts have been detected from IP: %s\n\n", 'temporary-login-links-premium'),
             $ip
         );
         
-        $message .= sprintf(
-            __("Number of failed attempts: %d\n", 'temporary-login-links-premium'),
+        /* translators: Failed attempts */
+        $message .= sprintf(__("Number of failed attempts: %d\n", 'temporary-login-links-premium'),
             $attempts
         );
         
-        $message .= sprintf(
-            __("Latest reason: %s\n\n", 'temporary-login-links-premium'),
+        /* translators: Latest reason */
+        $message .= sprintf(__("Latest reason: %s\n\n", 'temporary-login-links-premium'),
             $reason
         );
         
@@ -452,8 +451,8 @@ class TLP_Security {
         }
         
         $message .= "\n";
-        $message .= sprintf(
-            __("The IP has been temporarily blocked for %d minutes.\n\n", 'temporary-login-links-premium'),
+        /* translators: IP Blocked */
+        $message .= sprintf(__("The IP has been temporarily blocked for %d minutes.\n\n", 'temporary-login-links-premium'),
             $this->lockout_time / 60
         );
         
@@ -480,6 +479,7 @@ class TLP_Security {
             // Skip if field not in inputs and not required
             if (!isset($inputs[$field_name])) {
                 if (isset($field['required']) && $field['required']) {
+                    /* translators: Required */
                     $errors[] = sprintf(__('%s is required.', 'temporary-login-links-premium'), $field['label']);
                 }
                 continue;
@@ -492,6 +492,7 @@ class TLP_Security {
                 case 'email':
                     $value = sanitize_email($value);
                     if (!empty($value) && !is_email($value)) {
+                        /* translators: Valid email address */
                         $errors[] = sprintf(__('%s must be a valid email address.', 'temporary-login-links-premium'), $field['label']);
                     }
                     break;
@@ -508,10 +509,12 @@ class TLP_Security {
                     $value = intval($value);
                     // Check min/max if specified
                     if (isset($field['min']) && $value < $field['min']) {
-                        $errors[] = sprintf(__('%s must be at least %d.', 'temporary-login-links-premium'), $field['label'], $field['min']);
+                        /* translators: 1: Field label, 2: Minimum value */
+                        $errors[] = sprintf(__('%1$s must be at least %2$d.', 'temporary-login-links-premium'), $field['label'], $field['min']);
                     }
                     if (isset($field['max']) && $value > $field['max']) {
-                        $errors[] = sprintf(__('%s must be at most %d.', 'temporary-login-links-premium'), $field['label'], $field['max']);
+                        /* translators: 1: Field label, 2: Max value */
+                        $errors[] = sprintf(__('%1$s must be at most %2$d.', 'temporary-login-links-premium'), $field['label'], $field['max']);
                     }
                     break;
                     
@@ -528,6 +531,7 @@ class TLP_Security {
                 case 'role':
                     $value = sanitize_text_field($value);
                     if (!empty($value) && !get_role($value)) {
+                        /* translators: Valid Date */
                         $errors[] = sprintf(__('%s is not a valid role.', 'temporary-login-links-premium'), $value);
                     }
                     break;
@@ -544,6 +548,7 @@ class TLP_Security {
                     $value = sanitize_text_field($value);
                     // Check if value is in allowed options
                     if (isset($field['options']) && !isset($field['options'][$value])) {
+                        /* translators: Valid Date */
                         $errors[] = sprintf(__('%s is not a valid option.', 'temporary-login-links-premium'), $field['label']);
                     }
                     break;
@@ -552,6 +557,7 @@ class TLP_Security {
                     $value = sanitize_text_field($value);
                     // Basic date validation (Y-m-d H:i:s)
                     if (!empty($value) && !preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $value)) {
+                        /* translators: Correct date format */
                         $errors[] = sprintf(__('%s must be in the format YYYY-MM-DD HH:MM:SS.', 'temporary-login-links-premium'), $field['label']);
                     }
                     break;

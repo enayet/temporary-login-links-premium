@@ -88,8 +88,8 @@ class TLP_User_Manager {
                 // If the temporary user is trying to update their own profile
                 if ( $current_user_id === $user_id ) {
                     wp_die( 
-                        __( 'Temporary users cannot update their profile. Please contact the site administrator if you need to make changes.', 'temporary-login-links-premium' ),
-                        __( 'Profile Update Restricted', 'temporary-login-links-premium' ),
+                        esc_html__( 'Temporary users cannot update their profile. Please contact the site administrator if you need to make changes.', 'temporary-login-links-premium' ),
+                        esc_html__( 'Profile Update Restricted', 'temporary-login-links-premium' ),
                         array( 'response' => 403, 'back_link' => true )
                     );
                 }
@@ -200,14 +200,14 @@ class TLP_User_Manager {
         if ( ! isset( $_GET['page'] ) ) {
             $temp_user_filter = isset( $_GET['temp_user_filter'] ) ? $_GET['temp_user_filter'] : '';
             ?>
-            <label for="temp-user-filter" class="screen-reader-text"><?php _e( 'Filter by temporary user status', 'temporary-login-links-premium' ); ?></label>
+            <label for="temp-user-filter" class="screen-reader-text"><?php esc_html__( 'Filter by temporary user status', 'temporary-login-links-premium' ); ?></label>
             <select name="temp_user_filter" id="temp-user-filter">
-                <option value=""><?php _e( 'All users', 'temporary-login-links-premium' ); ?></option>
-                <option value="temp" <?php selected( $temp_user_filter, 'temp' ); ?>><?php _e( 'Temporary users only', 'temporary-login-links-premium' ); ?></option>
-                <option value="regular" <?php selected( $temp_user_filter, 'regular' ); ?>><?php _e( 'Regular users only', 'temporary-login-links-premium' ); ?></option>
-                <option value="active" <?php selected( $temp_user_filter, 'active' ); ?>><?php _e( 'Active temporary users', 'temporary-login-links-premium' ); ?></option>
-                <option value="inactive" <?php selected( $temp_user_filter, 'inactive' ); ?>><?php _e( 'Inactive temporary users', 'temporary-login-links-premium' ); ?></option>
-                <option value="expired" <?php selected( $temp_user_filter, 'expired' ); ?>><?php _e( 'Expired temporary users', 'temporary-login-links-premium' ); ?></option>
+                <option value=""><?php esc_html__( 'All users', 'temporary-login-links-premium' ); ?></option>
+                <option value="temp" <?php selected( $temp_user_filter, 'temp' ); ?>><?php esc_html__( 'Temporary users only', 'temporary-login-links-premium' ); ?></option>
+                <option value="regular" <?php selected( $temp_user_filter, 'regular' ); ?>><?php esc_html__( 'Regular users only', 'temporary-login-links-premium' ); ?></option>
+                <option value="active" <?php selected( $temp_user_filter, 'active' ); ?>><?php esc_html__( 'Active temporary users', 'temporary-login-links-premium' ); ?></option>
+                <option value="inactive" <?php selected( $temp_user_filter, 'inactive' ); ?>><?php esc_html__( 'Inactive temporary users', 'temporary-login-links-premium' ); ?></option>
+                <option value="expired" <?php selected( $temp_user_filter, 'expired' ); ?>><?php esc_html__( 'Expired temporary users', 'temporary-login-links-premium' ); ?></option>
             </select>
             <?php
         }
@@ -441,37 +441,37 @@ class TLP_User_Manager {
             
             switch ( $action ) {
                 case 'tlp_extend_7days':
-                    $message = sprintf( 
-                        _n( 'Extended temporary access by 7 days for %d user.', 'Extended temporary access by 7 days for %d users.', $processed, 'temporary-login-links-premium' ),
+                    /* translators: Extended temporary access */
+                    $message = sprintf(_n( 'Extended temporary access by 7 days for %d user.', 'Extended temporary access by 7 days for %d users.', $processed, 'temporary-login-links-premium' ),
                         $processed
                     );
                     break;
                     
                 case 'tlp_extend_30days':
-                    $message = sprintf( 
-                        _n( 'Extended temporary access by 30 days for %d user.', 'Extended temporary access by 30 days for %d users.', $processed, 'temporary-login-links-premium' ),
+                    /* translators: Extended temporary access */
+                    $message = sprintf(_n( 'Extended temporary access by 30 days for %d user.', 'Extended temporary access by 30 days for %d users.', $processed, 'temporary-login-links-premium' ),
                         $processed
                     );
                     break;
                     
                 case 'tlp_deactivate':
-                    $message = sprintf( 
-                        _n( 'Deactivated temporary access for %d user.', 'Deactivated temporary access for %d users.', $processed, 'temporary-login-links-premium' ),
+                    /* translators: Deactivated temporary access */
+                    $message = sprintf(_n( 'Deactivated temporary access for %d user.', 'Deactivated temporary access for %d users.', $processed, 'temporary-login-links-premium' ),
                         $processed
                     );
                     break;
                     
                 case 'tlp_reactivate':
-                    $message = sprintf( 
-                        _n( 'Reactivated temporary access for %d user.', 'Reactivated temporary access for %d users.', $processed, 'temporary-login-links-premium' ),
+                    /* translators: Reactivated temporary access */
+                    $message = sprintf(_n( 'Reactivated temporary access for %d user.', 'Reactivated temporary access for %d users.', $processed, 'temporary-login-links-premium' ),
                         $processed
                     );
                     break;
             }
             
             if ( $processed < $total ) {
-                $message .= ' ' . sprintf( 
-                    __( '%d user(s) were skipped because they are not temporary users.', 'temporary-login-links-premium' ),
+                /* translators: Not temporary user */
+                $message .= ' ' . sprintf( __( '%d user(s) were skipped because they are not temporary users.', 'temporary-login-links-premium' ),
                     $total - $processed
                 );
             }

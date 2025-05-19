@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name:       Temporary Login Links Premium
- * Plugin URI:        https://example.com/temporary-login-links-premium
+ * Plugin URI:        https://theweblab.xyz/temporary-login-links-premium
  * Description:       Create secure, branded, temporary login links with advanced controls for WordPress.
  * Version:           1.0.0
  * Author:            Your Name
- * Author URI:        https://example.com
+ * Author URI:        https://theweblab.xyz/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       temporary-login-links-premium
@@ -90,7 +90,7 @@ add_action( 'admin_init', 'tlp_check_free_version' );
 function tlp_free_version_notice() {
     ?>
     <div class="notice notice-warning is-dismissible">
-        <p><?php _e( 'You have both Temporary Login Links Premium and the free Temporary Login Without Password plugin activated. We recommend deactivating the free version to avoid conflicts.', 'temporary-login-links-premium' ); ?></p>
+        <p><?php esc_html__( 'You have both Temporary Login Links Premium and the free Temporary Login Without Password plugin activated. We recommend deactivating the free version to avoid conflicts.', 'temporary-login-links-premium' ); ?></p>
     </div>
     <?php
 }

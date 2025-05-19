@@ -219,7 +219,9 @@ $options = get_option('temporary_login_links_premium_settings', array());
                     <div class="tlp-email-preview-content">
                         <p><?php _e('Hello John,', 'temporary-login-links-premium'); ?></p>
                         
-                        <p><?php printf(__('You have been granted temporary access to %s with Editor privileges.', 'temporary-login-links-premium'), esc_html($company_name)); ?></p>
+                        <p><?php 
+                            /* translators: %s company name  */   
+                            printf(__('You have been granted temporary access to %s with Editor privileges.', 'temporary-login-links-premium'), esc_html($company_name)); ?></p>
                         
                         <div class="tlp-email-button">
                             <a href="#" class="button button-primary"><?php _e('Log In Now', 'temporary-login-links-premium'); ?></a>
@@ -229,7 +231,9 @@ $options = get_option('temporary_login_links_premium_settings', array());
                     </div>
                     
                     <div class="tlp-email-preview-footer">
-                        <p><?php printf(__('Regards,<br>%s Team', 'temporary-login-links-premium'), esc_html($company_name)); ?></p>
+                        <p><?php 
+                            /* translators: %s company name  */   
+                            printf(__('Regards,<br>%s Team', 'temporary-login-links-premium'), esc_html($company_name)); ?></p>
                     </div>
                 </div>
                 
