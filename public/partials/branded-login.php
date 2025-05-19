@@ -319,12 +319,12 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
                 </div>
                 
                 <div class="tlp-access-info tlp-access-active">
-                    <p style="margin: 0;"><?php esc_html__('Your temporary login link is valid and ready to use.', 'temporary-login-links-premium'); ?></p>
+                    <p style="margin: 0;"><?php echo esc_html__('Your temporary login link is valid and ready to use.', 'temporary-login-links-premium'); ?></p>
                 </div>
                 
                 <div class="tlp-access-cta">
                     <a href="<?php echo esc_url($auto_login_url); ?>" class="tlp-button">
-                        <?php esc_html__('Access Site', 'temporary-login-links-premium'); ?>
+                        <?php echo esc_html__('Access Site', 'temporary-login-links-premium'); ?>
                     </a>
                 </div>
                 
@@ -366,7 +366,7 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
         <div class="tlp-footer">
             <p><?php 
                 /* translators: Year and company name  */
-                printf(esc_html__('&copy; %$1s %$2s', 'temporary-login-links-premium'), date('Y'), esc_html($company_name)); ?></p>
+                printf(esc_html__('&copy; %1$s %2$s', 'temporary-login-links-premium'), date('Y'), esc_html($company_name)); ?></p>
         </div>
     </div>
     

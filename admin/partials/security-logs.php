@@ -69,19 +69,18 @@ if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
                         <span class="displaying-num">
                             <?php
                                 /* translators: %s Items */    
-                                printf(esc_html__('%s item', '%s items', $logs['total_items'], 'temporary-login-links-premium'),
-                                number_format_i18n($logs['total_items'])
-                            ); ?>
+                                echo esc_html(sprintf(_n('%d item', '%d items', $logs['total_items'], 'temporary-login-links-premium'), number_format_i18n($logs['total_items'])));   
+                            ?>
                         </span>
                         <?php
-                        echo paginate_links(array(
+                        echo wp_kses_post(paginate_links(array(
                             'base' => add_query_arg('paged', '%#%'),
                             'format' => '',
                             'prev_text' => '&laquo;',
                             'next_text' => '&raquo;',
                             'total' => ceil($logs['total_items'] / $logs['per_page']),
                             'current' => $logs['page'],
-                        ));
+                        )));
                         ?>
                     </div>
                 <?php endif; ?>
@@ -103,7 +102,7 @@ if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
                     <?php foreach ($logs['items'] as $log) : ?>
                         <tr>
                             <td>
-                                <?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($log['logged_at'])); ?>
+                                <?php echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($log['logged_at']))); ?>
                             </td>
                             <td><?php echo esc_html($log['user_ip']); ?></td>
                             <td><?php echo esc_html($log['token_fragment']); ?></td>
@@ -171,20 +170,20 @@ if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
                            
                             <?php 
                             
-                                /* translators: %s Items */    
-                                printf(esc_html__('%s item', '%s items', $logs['total_items'], 'temporary-login-links-premium'),
-                                number_format_i18n($logs['total_items'])
-                            ); ?>
+                                /* translators: %s Items */                                
+                                echo esc_html(sprintf(_n('%d item', '%d items', $logs['total_items'], 'temporary-login-links-premium'), number_format_i18n($logs['total_items']))); 
+                            
+                            ?>
                         </span>
                         <?php
-                        echo paginate_links(array(
+                        echo wp_kses_post(paginate_links(array(
                             'base' => add_query_arg('paged', '%#%'),
                             'format' => '',
                             'prev_text' => '&laquo;',
                             'next_text' => '&raquo;',
                             'total' => ceil($logs['total_items'] / $logs['per_page']),
                             'current' => $logs['page'],
-                        ));
+                        )));
                         ?>
                     </div>
                 <?php endif; ?>
@@ -198,7 +197,7 @@ if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
             </a>
             
             <?php if (!empty($logs['items'])) : ?>
-                <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-security&action=clear_logs'), 'tlp_clear_security_logs'); ?>" class="button button-link-delete" onclick="return confirm('<?php esc_attr_e('Are you sure you want to clear all security logs? This action cannot be undone.', 'temporary-login-links-premium'); ?>');">
+                <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-security&action=clear_logs'), 'tlp_clear_security_logs')); ?>" class="button button-link-delete" onclick="return confirm('<?php esc_attr_e('Are you sure you want to clear all security logs? This action cannot be undone.', 'temporary-login-links-premium'); ?>');">
                     <?php echo esc_html__('Clear All Logs', 'temporary-login-links-premium'); ?>
                 </a>
             <?php endif; ?>

@@ -138,24 +138,19 @@ if (!defined('WPINC')) {
                                         $hours = floor($time_diff / 3600);
                                         $minutes = floor(($time_diff % 3600) / 60);
                                         
-                                        /* translators: %d hours  */   
-                                        echo sprintf(esc_html__('%d hour', '%d hours', $hours, 'temporary-login-links-premium'),
-                                            $hours
-                                        );
+                                        /* translators: %d hours  */                                           
+                                        echo esc_html( sprintf( _n( '%d hour', '%d hours', $days, 'temporary-login-links-premium' ), $hours ));
                                         
                                         if ($minutes > 0) {
                                             /* translators: %d minutes  */   
-                                            echo ' ' . sprintf(esc_html__('%d minute', '%d minutes', $minutes, 'temporary-login-links-premium'),
-                                                $minutes
-                                            );
+                                            echo esc_html( sprintf( _n( '%d minute', '%d minutes', $days, 'temporary-login-links-premium' ), $minutes ));
                                         }
                                     } else { // More than a day
                                         $days = floor($time_diff / 86400);
                                         
                                         /* translators: %d Days  */    
-                                        echo sprintf(esc_html__('%d day', '%d days', $days, 'temporary-login-links-premium'),
-                                            $days
-                                        );
+                                        echo esc_html( sprintf( _n( '%d day', '%d days', $days, 'temporary-login-links-premium' ), $days ));
+                                        
                                     }
                                     ?>
                                 </td>
