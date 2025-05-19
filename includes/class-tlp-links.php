@@ -1358,7 +1358,7 @@ private function get_client_ip() {
 
         // Get results
         $logs = array();
-        if (!empty($all_values)) {
+        if (!empty($values)) {
             $logs = $wpdb->get_results($wpdb->prepare($sql, $all_values), ARRAY_A);
         } else {
             // If no WHERE conditions, we still need to prepare for LIMIT

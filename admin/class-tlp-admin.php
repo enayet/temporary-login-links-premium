@@ -411,20 +411,46 @@ class TLP_Admin {
         if (!$this->security->current_user_can_manage()) {
             wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'temporary-login-links-premium'));
         }
-        
+
         // Get current page
         $page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
         $per_page = 20;
-        
-        // Get security logs
-        $logs = $this->security->get_security_logs(array(
+
+        // Prepare filter arguments
+        $args = array(
             'page' => $page,
             'per_page' => $per_page
-        ));
-        
+        );
+
+        // Add status filter
+        if (isset($_GET['status']) && !empty($_GET['status'])) {
+            $args['status'] = sanitize_text_field($_GET['status']);
+        }
+
+        // Add search filter
+        if (isset($_GET['search']) && !empty($_GET['search'])) {
+            $args['search'] = sanitize_text_field($_GET['search']);
+        }
+
+        // Add date range filters
+        if (isset($_GET['start_date']) && !empty($_GET['start_date'])) {
+            $args['start_date'] = sanitize_text_field($_GET['start_date']);
+        }
+
+        if (isset($_GET['end_date']) && !empty($_GET['end_date'])) {
+            $args['end_date'] = sanitize_text_field($_GET['end_date']);
+        }
+
+        // Get security logs with filters applied
+        $logs = $this->security->get_security_logs($args);
+
         // Load template
         include plugin_dir_path(__FILE__) . 'partials/security-logs.php';
     }
+    
+   
+    
+    
 
     /**
      * Display the settings page.

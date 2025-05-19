@@ -33,84 +33,69 @@ if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
             <p><?php echo esc_html__('This page shows security-related events, including failed login attempts, blocked IPs, and suspicious activity.', 'temporary-login-links-premium'); ?></p>
         </div>
         
-        <?php if (empty($logs['items'])) : ?>
-            <div class="notice notice-info">
-                <p><?php echo esc_html__('No security logs found. This is a good sign! It means there have been no failed login attempts or suspicious activities.', 'temporary-login-links-premium'); ?></p>
-            </div>
-        <?php else : ?>
-            <!-- Filters -->
-            <div class="tablenav top">
-                <div class="alignleft actions">
-                    <form method="get">
-                        <input type="hidden" name="page" value="temporary-login-links-premium-security">
-                        <select name="status">
-                            <option value=""><?php echo esc_html__('All Statuses', 'temporary-login-links-premium'); ?></option>
-                            <option value="failed" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'failed'); ?>><?php echo esc_html__('Failed Attempts', 'temporary-login-links-premium'); ?></option>
-                            <option value="blocked" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'blocked'); ?>><?php echo esc_html__('Blocked IPs', 'temporary-login-links-premium'); ?></option>
-                        </select>
-                        
-                        <input type="text" name="search" placeholder="<?php esc_attr_e('Search logs...', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['search']) ? esc_attr($_GET['search']) : ''; ?>">
+        <!-- Filters -->
+        <div class="tablenav top">
+            <div class="alignleft actions">
+                <form method="get">
+                    <input type="hidden" name="page" value="temporary-login-links-premium-security">
+                    <select name="status">
+                        <option value=""><?php echo esc_html__('All Statuses', 'temporary-login-links-premium'); ?></option>
+                        <option value="failed" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'failed'); ?>><?php echo esc_html__('Failed Attempts', 'temporary-login-links-premium'); ?></option>
+                        <option value="blocked" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'blocked'); ?>><?php echo esc_html__('Blocked IPs', 'temporary-login-links-premium'); ?></option>
+                    </select>
+                    
+                    <input type="text" name="search" placeholder="<?php esc_attr_e('Search logs...', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['search']) ? esc_attr($_GET['search']) : ''; ?>">
 
-                        <span class="tlp-date-range">
-                            <input type="date" name="start_date" id="start_date" value="<?php echo isset($_GET['start_date']) ? esc_attr($_GET['start_date']) : ''; ?>">
-                            <input type="date" name="end_date" id="end_date" value="<?php echo isset($_GET['end_date']) ? esc_attr($_GET['end_date']) : ''; ?>">
-                        </span>
-                        
-                        <?php submit_button(__('Filter', 'temporary-login-links-premium'), 'action', 'filter', false); ?>
-                        
-                        <?php if (isset($_GET['status']) || isset($_GET['search']) || isset($_GET['start_date'])): ?>
-                            <a href="<?php echo esc_url(admin_url('admin.php?page=temporary-login-links-premium-security')); ?>" class="button"><?php echo esc_html__('Reset', 'temporary-login-links-premium'); ?></a>
-                        <?php endif; ?>
-                    </form>
-                </div>
-                
-                <?php if ($logs['total_items'] > 0) : ?>
-                    <div class="tablenav-pages">
-                        <span class="displaying-num">
-                            <?php
-                                /* translators: %s Items */    
-                                echo esc_html(sprintf(_n('%d item', '%d items', $logs['total_items'], 'temporary-login-links-premium'), number_format_i18n($logs['total_items'])));   
-                            ?>
-                        </span>
-                        <?php
-//                        echo wp_kses_post(paginate_links(array(
-//                            'base' => add_query_arg('paged', '%#%'),
-//                            'format' => '',
-//                            'prev_text' => '&laquo;',
-//                            'next_text' => '&raquo;',
-//                            'total' => ceil($logs['total_items'] / $logs['per_page']),
-//                            'current' => $logs['page'],
-//                        )));
-                        
-                        $pagination = paginate_links(array(
-                            'base' => add_query_arg('paged', '%#%'),
-                            'format' => '',
-                            'prev_text' => '&laquo;',
-                            'next_text' => '&raquo;',
-                            'total' => ceil($logs['total_items'] / $logs['per_page']),
-                            'current' => $logs['page'],
-                        ));
-                        echo $pagination ? wp_kses_post($pagination) : '';                        
-                        
-                        
-                        ?>
-                    </div>
-                <?php endif; ?>
+                    <span class="tlp-date-range">
+                        <input type="date" name="start_date" id="start_date" value="<?php echo isset($_GET['start_date']) ? esc_attr($_GET['start_date']) : ''; ?>">
+                        <input type="date" name="end_date" id="end_date" value="<?php echo isset($_GET['end_date']) ? esc_attr($_GET['end_date']) : ''; ?>">
+                    </span>
+                    
+                    <?php submit_button(__('Filter', 'temporary-login-links-premium'), 'action', 'filter', false); ?>
+                    
+                    <?php if (isset($_GET['status']) || isset($_GET['search']) || isset($_GET['start_date']) || isset($_GET['end_date'])): ?>
+                        <a href="<?php echo esc_url(admin_url('admin.php?page=temporary-login-links-premium-security')); ?>" class="button"><?php echo esc_html__('Reset', 'temporary-login-links-premium'); ?></a>
+                    <?php endif; ?>
+                </form>
             </div>
             
-            <table class="wp-list-table widefat fixed striped logs-table">
-                <thead>
-                    <tr>
-                        <th width="15%"><?php echo esc_html__('Time', 'temporary-login-links-premium'); ?></th>
-                        <th width="12%"><?php echo esc_html__('IP Address', 'temporary-login-links-premium'); ?></th>
-                        <th width="15%"><?php echo esc_html__('Token', 'temporary-login-links-premium'); ?></th>
-                        <th width="15%"><?php echo esc_html__('Email', 'temporary-login-links-premium'); ?></th>
-                        <th width="10%"><?php echo esc_html__('Status', 'temporary-login-links-premium'); ?></th>
-                        <th width="20%"><?php echo esc_html__('Reason', 'temporary-login-links-premium'); ?></th>
-                        <th width="13%"><?php echo esc_html__('User Agent', 'temporary-login-links-premium'); ?></th>
-                    </tr>
-                </thead>
-                <tbody>
+            <?php if ($logs['total_items'] > 0) : ?>
+                <div class="tablenav-pages">
+                    <span class="displaying-num">
+                        <?php
+                            /* translators: %s Items */    
+                            echo esc_html(sprintf(_n('%d item', '%d items', $logs['total_items'], 'temporary-login-links-premium'), number_format_i18n($logs['total_items'])));   
+                        ?>
+                    </span>
+                    <?php
+                    $pagination = paginate_links(array(
+                        'base' => add_query_arg('paged', '%#%'),
+                        'format' => '',
+                        'prev_text' => '&laquo;',
+                        'next_text' => '&raquo;',
+                        'total' => ceil($logs['total_items'] / $logs['per_page']),
+                        'current' => $logs['page'],
+                    ));
+                    echo $pagination ? wp_kses_post($pagination) : '';                        
+                    ?>
+                </div>
+            <?php endif; ?>
+        </div>
+        
+        <table class="wp-list-table widefat fixed striped logs-table">
+            <thead>
+                <tr>
+                    <th width="15%"><?php echo esc_html__('Time', 'temporary-login-links-premium'); ?></th>
+                    <th width="12%"><?php echo esc_html__('IP Address', 'temporary-login-links-premium'); ?></th>
+                    <th width="15%"><?php echo esc_html__('Token', 'temporary-login-links-premium'); ?></th>
+                    <th width="15%"><?php echo esc_html__('Email', 'temporary-login-links-premium'); ?></th>
+                    <th width="10%"><?php echo esc_html__('Status', 'temporary-login-links-premium'); ?></th>
+                    <th width="20%"><?php echo esc_html__('Reason', 'temporary-login-links-premium'); ?></th>
+                    <th width="13%"><?php echo esc_html__('User Agent', 'temporary-login-links-premium'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($logs['items'])) : ?>
                     <?php foreach ($logs['items'] as $log) : ?>
                         <tr>
                             <td>
@@ -161,57 +146,59 @@ if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
                             </td>
                         </tr>
                     <?php endforeach; ?>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th><?php echo esc_html__('Time', 'temporary-login-links-premium'); ?></th>
-                        <th><?php echo esc_html__('IP Address', 'temporary-login-links-premium'); ?></th>
-                        <th><?php echo esc_html__('Token', 'temporary-login-links-premium'); ?></th>
-                        <th><?php echo esc_html__('Email', 'temporary-login-links-premium'); ?></th>
-                        <th><?php echo esc_html__('Status', 'temporary-login-links-premium'); ?></th>
-                        <th><?php echo esc_html__('Reason', 'temporary-login-links-premium'); ?></th>
-                        <th><?php echo esc_html__('User Agent', 'temporary-login-links-premium'); ?></th>
-                    </tr>
-                </tfoot>
-            </table>
-            
-            <div class="tablenav bottom">
-                <?php if ($logs['total_items'] > 0) : ?>
-                    <div class="tablenav-pages">
-                        <span class="displaying-num">
-                           
+                <?php else: ?>
+                    <tr class="no-items">
+                        <td class="colspanchange" colspan="7">
                             <?php 
-                            
-                                /* translators: %s Items */                                
-                                echo esc_html(sprintf(_n('%d item', '%d items', $logs['total_items'], 'temporary-login-links-premium'), number_format_i18n($logs['total_items']))); 
-                            
+                            if (isset($_GET['status']) || isset($_GET['search']) || isset($_GET['start_date']) || isset($_GET['end_date'])) {
+                                esc_html_e('No security logs found matching your filter criteria.', 'temporary-login-links-premium');
+                            } else {
+                                esc_html_e('No security logs found.', 'temporary-login-links-premium');
+                            }
                             ?>
-                        </span>
-                        <?php
-//                        echo wp_kses_post(paginate_links(array(
-//                            'base' => add_query_arg('paged', '%#%'),
-//                            'format' => '',
-//                            'prev_text' => '&laquo;',
-//                            'next_text' => '&raquo;',
-//                            'total' => ceil($logs['total_items'] / $logs['per_page']),
-//                            'current' => $logs['page'],
-//                        )));
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th><?php echo esc_html__('Time', 'temporary-login-links-premium'); ?></th>
+                    <th><?php echo esc_html__('IP Address', 'temporary-login-links-premium'); ?></th>
+                    <th><?php echo esc_html__('Token', 'temporary-login-links-premium'); ?></th>
+                    <th><?php echo esc_html__('Email', 'temporary-login-links-premium'); ?></th>
+                    <th><?php echo esc_html__('Status', 'temporary-login-links-premium'); ?></th>
+                    <th><?php echo esc_html__('Reason', 'temporary-login-links-premium'); ?></th>
+                    <th><?php echo esc_html__('User Agent', 'temporary-login-links-premium'); ?></th>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <div class="tablenav bottom">
+            <?php if ($logs['total_items'] > 0) : ?>
+                <div class="tablenav-pages">
+                    <span class="displaying-num">
+                       
+                        <?php 
                         
-                        $pagination = paginate_links(array(
-                            'base' => add_query_arg('paged', '%#%'),
-                            'format' => '',
-                            'prev_text' => '&laquo;',
-                            'next_text' => '&raquo;',
-                            'total' => ceil($logs['total_items'] / $logs['per_page']),
-                            'current' => $logs['page'],
-                        ));
-                        echo $pagination ? wp_kses_post($pagination) : '';                        
+                            /* translators: %s Items */                                
+                            echo esc_html(sprintf(_n('%d item', '%d items', $logs['total_items'], 'temporary-login-links-premium'), number_format_i18n($logs['total_items']))); 
                         
                         ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
+                    </span>
+                    <?php
+                    $pagination = paginate_links(array(
+                        'base' => add_query_arg('paged', '%#%'),
+                        'format' => '',
+                        'prev_text' => '&laquo;',
+                        'next_text' => '&raquo;',
+                        'total' => ceil($logs['total_items'] / $logs['per_page']),
+                        'current' => $logs['page'],
+                    ));
+                    echo $pagination ? wp_kses_post($pagination) : '';                        
+                    ?>
+                </div>
+            <?php endif; ?>
+        </div>
         
         <!-- Security Settings Link -->
         <div class="tlp-security-settings-link">
@@ -282,5 +269,10 @@ if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
 .tlp-date-range input[type="text"] {
     width: 110px;
 }
-</style>
 
+.no-items td {
+    text-align: center;
+    padding: 20px 0;
+    color: #777;
+}
+</style>

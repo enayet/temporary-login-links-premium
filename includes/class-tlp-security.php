@@ -592,100 +592,107 @@ class TLP_Security {
      * @param    array     $args    Query arguments.
      * @return   array              Security logs data.
      */
-    public function get_security_logs($args = array()) {
-        global $wpdb;
-        
-        $defaults = array(
-            'per_page' => 20,
-            'page' => 1,
-            'status' => '',
-            'search' => '',
-            'daterange' => '',
-        );
-        
-        $args = wp_parse_args($args, $defaults);
-        
-        // Build query
-        $sql = "SELECT * FROM {$this->security_log_table}";
-        $where = array();
-        $where_args = array();
-        
-        // Status filter
-        if (!empty($args['status'])) {
-            if ($args['status'] === 'failed') {
-                $where[] = "status IN ('failed', 'blocked')";
-            } else {
-                $where[] = "status = %s";
-                $where_args[] = $args['status'];
-            }
-        }
-        
-        // Search filter
-        if (!empty($args['search'])) {
-            $search = '%' . $wpdb->esc_like($args['search']) . '%';
-            $where[] = "(token_fragment LIKE %s OR user_email LIKE %s OR user_ip LIKE %s OR reason LIKE %s)";
-            $where_args[] = $search;
-            $where_args[] = $search;
-            $where_args[] = $search;
-            $where_args[] = $search;
-        }
-        
-        // Date range filter
-        if (!empty($args['daterange'])) {
-            list($start_date, $end_date) = explode('|', $args['daterange']);
-            if (!empty($start_date)) {
-                $where[] = "logged_at >= %s";
-                $where_args[] = $start_date . ' 00:00:00';
-            }
-            if (!empty($end_date)) {
-                $where[] = "logged_at <= %s";
-                $where_args[] = $end_date . ' 23:59:59';
-            }
-        }
-        
-        // Add WHERE clause if needed
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(' AND ', $where);
-        }
-        
-        // Add ORDER BY
-        $sql .= " ORDER BY logged_at DESC";
-        
-        // Count total items
-        $count_sql = "SELECT COUNT(*) FROM {$this->security_log_table}";
-        if (!empty($where)) {
-            $count_sql .= " WHERE " . implode(' AND ', $where);
-        }
-        
-        if (!empty($where_args)) {
-            $total_items = $wpdb->get_var($wpdb->prepare($count_sql, $where_args));
+public function get_security_logs($args = array()) {
+    global $wpdb;
+    
+    $defaults = array(
+        'per_page' => 20,
+        'page' => 1,
+        'status' => '',
+        'search' => '',
+        'start_date' => '',
+        'end_date' => '',
+    );
+    
+    $args = wp_parse_args($args, $defaults);
+    
+    // Build the base query
+    $fields = "SELECT * ";
+    $base_query = "FROM {$this->security_log_table}";
+    $where = array();
+    $values = array();
+    
+    // Status filter
+    if (!empty($args['status'])) {
+        if ($args['status'] === 'failed') {
+            $where[] = "status IN ('failed', 'blocked')";
         } else {
-            $total_items = $wpdb->get_var($count_sql);
+            $where[] = "status = %s";
+            $values[] = $args['status'];
         }
-        
-        // Pagination
-        $per_page = max(1, absint($args['per_page']));
-        $page = max(1, absint($args['page']));
-        $offset = ($page - 1) * $per_page;
-        
-        $sql .= " LIMIT %d, %d";
-        $where_args[] = $offset;
-        $where_args[] = $per_page;
-        
-        // Get results
-        if (!empty($where_args)) {
-            $logs = $wpdb->get_results($wpdb->prepare($sql, $where_args), ARRAY_A);
-        } else {
-            $logs = $wpdb->get_results($sql, ARRAY_A);
-        }
-        
-        return array(
-            'items' => $logs,
-            'total_items' => $total_items,
-            'per_page' => $per_page,
-            'page' => $page,
-        );
     }
+    
+    // Search filter
+    if (!empty($args['search'])) {
+        $search = '%' . $wpdb->esc_like($args['search']) . '%';
+        $where[] = "(token_fragment LIKE %s OR user_email LIKE %s OR user_ip LIKE %s OR reason LIKE %s)";
+        $values[] = $search;
+        $values[] = $search;
+        $values[] = $search;
+        $values[] = $search;
+    }
+    
+    // Date range filter
+    if (!empty($args['start_date'])) {
+        $where[] = "logged_at >= %s";
+        $values[] = $args['start_date'] . ' 00:00:00';
+    }
+    
+    if (!empty($args['end_date'])) {
+        $where[] = "logged_at <= %s";
+        $values[] = $args['end_date'] . ' 23:59:59';
+    }
+    
+    // Add WHERE clause if needed
+    $where_clause = '';
+    if (!empty($where)) {
+        $where_clause = " WHERE " . implode(' AND ', $where);
+    }
+    
+    // Add ORDER BY
+    $order_clause = " ORDER BY logged_at DESC";
+    
+    // Get count of total items
+    $count_sql = "SELECT COUNT(*) " . $base_query . $where_clause;
+    
+    if (!empty($values)) {
+        $total_items = $wpdb->get_var($wpdb->prepare($count_sql, $values));
+    } else {
+        // If no values for preparation, use direct query
+        $total_items = $wpdb->get_var($count_sql);
+    }
+    
+    // Pagination
+    $per_page = max(1, absint($args['per_page']));
+    $page = max(1, absint($args['page']));
+    $offset = ($page - 1) * $per_page;
+    
+    // Limit clause
+    $limit = " LIMIT %d, %d";
+    $limit_values = array($offset, $per_page);
+    
+    // Complete query
+    $sql = $fields . $base_query . $where_clause . $order_clause . $limit;
+    
+    // Combine all values for the prepare statement
+    $all_values = array_merge($values, $limit_values);
+    
+    // Get results
+    $logs = array();
+    if (!empty($all_values)) {
+        $logs = $wpdb->get_results($wpdb->prepare($sql, $all_values), ARRAY_A);
+    } else {
+        // If no WHERE conditions, we still need to prepare for LIMIT
+        $logs = $wpdb->get_results($wpdb->prepare($fields . $base_query . $order_clause . $limit, $limit_values), ARRAY_A);
+    }
+    
+    return array(
+        'items' => $logs,
+        'total_items' => $total_items,
+        'per_page' => $per_page,
+        'page' => $page,
+    );
+}
 
     /**
      * Check if a request is a valid AJAX request.
