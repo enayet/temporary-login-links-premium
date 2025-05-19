@@ -199,7 +199,7 @@ class TLP_Links {
         );
         
         if ( isset( $preset_durations[ $duration ] ) ) {
-            $expiry_date = date( 'Y-m-d H:i:s', strtotime( $preset_durations[ $duration ] ) );
+            $expiry_date = gmdate( 'Y-m-d H:i:s', strtotime( $preset_durations[ $duration ] ) );
         } elseif ( preg_match( '/^custom_(.+)$/', $duration, $matches ) ) {
             // Handle custom date
             $custom_date = $matches[1];
@@ -224,7 +224,7 @@ class TLP_Links {
                 return new WP_Error( 'invalid_duration', __( 'Invalid duration. Please use a valid time format.', 'temporary-login-links-premium' ) );
             }
             
-            $expiry_date = date( 'Y-m-d H:i:s', $time );
+            $expiry_date = gmdate( 'Y-m-d H:i:s', $time );
         }
         
         return $expiry_date;
@@ -464,7 +464,36 @@ class TLP_Links {
      * @since    1.0.0
      * @return   string    The client's IP address.
      */
-    private function get_client_ip() {
+    
+private function get_client_ip() {
+    // Check for shared internet/ISP IP
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        return sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
+    }
+    
+    // Check for IPs passing through proxies
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // Unslash and sanitize the entire string first
+        $x_forwarded_for = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
+        // Use the first IP from the list
+        $ip_list = explode(',', $x_forwarded_for);
+        $ip = trim($ip_list[0]);
+        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '127.0.0.1';
+    }
+    
+    // Use remote address if available
+    if (!empty($_SERVER['REMOTE_ADDR'])) {
+        $remote_addr = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR']));
+        return filter_var($remote_addr, FILTER_VALIDATE_IP) ? $remote_addr : '127.0.0.1';
+    }
+    
+    // Fallback to a generic IP
+    return '127.0.0.1';
+}    
+    
+    
+    
+    private function get_client_ip1() {
         // Check for shared internet/ISP IP
         if ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
             return sanitize_text_field( $_SERVER['HTTP_CLIENT_IP'] );
@@ -915,6 +944,8 @@ class TLP_Links {
      * @param    array     $args    The query args.
      * @return   array              The links data.
      */
+   
+        
     public function get_links( $args = array() ) {
         global $wpdb;
         
@@ -1000,12 +1031,9 @@ class TLP_Links {
         $page = max( 1, absint( $args['page'] ) );
         $offset = ( $page - 1 ) * $per_page;
         
-        $sql .= " LIMIT %d, %d";
-        $values[] = $offset;
-        $values[] = $per_page;
+
+        $prepared_sql = $wpdb->prepare("$sql LIMIT %d, %d", $offset, $per_page);        
         
-        // Prepare the query
-        $prepared_sql = $wpdb->prepare( $sql, $values );
         
         // Get results
         $results = $wpdb->get_results( $prepared_sql, ARRAY_A );

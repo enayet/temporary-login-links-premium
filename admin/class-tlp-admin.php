@@ -118,18 +118,24 @@ class TLP_Admin {
      *
      * @since    1.0.0
      */
+    
+    
+    
+    
     public function enqueue_styles() {
         // Only enqueue on plugin pages
         if ($this->is_plugin_page()) {
             wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/tlp-admin.css', array(), $this->version, 'all');
             
             // Add color picker styles for branding settings
-            if (isset($_GET['page']) && $_GET['page'] === 'temporary-login-links-premium-branding') {
+            $page = isset($_GET['page']) ? sanitize_text_field(wp_unslash($_GET['page'])) : '';
+            
+            if ($page === 'temporary-login-links-premium-branding') {
                 wp_enqueue_style('wp-color-picker');
             }
             
             // Add datepicker styles for creating/editing links
-            if ((isset($_GET['page']) && $_GET['page'] === 'temporary-login-links-premium-links') && 
+            if (($page === 'temporary-login-links-premium-links') && 
                 (isset($_GET['action']) && ($_GET['action'] === 'create' || $_GET['action'] === 'edit'))) {
                 wp_enqueue_style('jquery-ui-datepicker');
             }
@@ -1056,7 +1062,7 @@ class TLP_Admin {
         );
         
         // Get links expiring soon (in the next 48 hours)
-        $expiring_soon_time = date('Y-m-d H:i:s', strtotime('+48 hours'));
+        $expiring_soon_time = gmdate('Y-m-d H:i:s', strtotime('+48 hours'));
         
         $expiring_soon = $wpdb->get_results($wpdb->prepare(
             "SELECT id, user_email, expiry FROM $table_name 
@@ -1079,7 +1085,7 @@ class TLP_Admin {
             JOIN $table_name l ON a.link_id = l.id 
             WHERE a.accessed_at > %s 
             ORDER BY a.accessed_at DESC LIMIT 10",
-            date('Y-m-d H:i:s', strtotime('-7 days'))
+            gmdate('Y-m-d H:i:s', strtotime('-7 days'))
         ));
         
         return array(

@@ -437,38 +437,45 @@ jQuery(document).ready(function($) {
         window.history.pushState({}, '', $(this).attr('href'));
     });
     
-    // Import/Export functionality
+    // Export/Import functionality
     $('.tlp-export-settings').on('click', function() {
-        // Get settings data
+        // Show loading state
+        $(this).addClass('button-disabled').text('<?php echo esc_js(__('Exporting...', 'temporary-login-links-premium')); ?>');
+
+        // Get settings data via AJAX
         $.ajax({
             url: ajaxurl,
             type: 'POST',
             data: {
                 action: 'tlp_export_settings',
-                nonce: '<?php echo esc_js(wp_create_nonce('tlp_export_settings_nonce')); ?>'
+                nonce: '<?php echo wp_create_nonce('tlp_export_settings_nonce'); ?>'
             },
             success: function(response) {
+                // Reset button state
+                $('.tlp-export-settings').removeClass('button-disabled').text('<?php echo esc_js(__('Export Settings', 'temporary-login-links-premium')); ?>');
+
                 if (response.success) {
-                    // Create a textarea with the data
-                    var $textarea = $('<textarea>').val(response.data).css({
+                    // Create textarea with the exported data
+                    var exportData = response.data;
+                    var $textarea = $('<textarea>').val(exportData).css({
                         width: '100%',
                         height: '200px',
                         marginBottom: '15px'
                     });
-                    
-                    // Create a dialog
+
+                    // Create a dialog with the export data
                     var $dialog = $('<div>').attr({
                         'id': 'tlp-export-dialog',
-                        'title': '<?php esc_html_e('Export Settings', 'temporary-login-links-premium'); ?>'
+                        'title': '<?php echo esc_js(__('Export Settings', 'temporary-login-links-premium')); ?>'
                     }).append(
-                        $('<p>').text('<?php esc_html_e('Copy the settings data below:', 'temporary-login-links-premium'); ?>'),
+                        $('<p>').text('<?php echo esc_js(__('Copy the settings data below:', 'temporary-login-links-premium')); ?>'),
                         $textarea,
                         $('<button>').attr({
                             'type': 'button',
                             'class': 'button button-primary tlp-copy-export'
-                        }).text('<?php esc_html_e('Copy to Clipboard', 'temporary-login-links-premium'); ?>')
+                        }).text('<?php echo esc_js(__('Copy to Clipboard', 'temporary-login-links-premium')); ?>')
                     );
-                    
+
                     // Show the dialog
                     $dialog.dialog({
                         width: 600,
@@ -477,55 +484,92 @@ jQuery(document).ready(function($) {
                             $(this).dialog('destroy').remove();
                         }
                     });
-                    
+
                     // Copy to clipboard functionality
                     $('.tlp-copy-export').on('click', function() {
                         $textarea.select();
                         document.execCommand('copy');
-                        $(this).text('<?php esc_html('Copied!', 'temporary-login-links-premium'); ?>');
+                        $(this).text('<?php echo esc_js(__('Copied!', 'temporary-login-links-premium')); ?>');
+                        setTimeout(function() {
+                            $('.tlp-copy-export').text('<?php echo esc_js(__('Copy to Clipboard', 'temporary-login-links-premium')); ?>');
+                        }, 2000);
                     });
+                } else {
+                    alert('<?php echo esc_js(__('Error exporting settings.', 'temporary-login-links-premium')); ?>');
                 }
+            },
+            error: function() {
+                // Reset button state
+                $('.tlp-export-settings').removeClass('button-disabled').text('<?php echo esc_js(__('Export Settings', 'temporary-login-links-premium')); ?>');
+                alert('<?php echo esc_js(__('An error occurred. Please try again.', 'temporary-login-links-premium')); ?>');
             }
         });
     });
-    
+
     // Show import form
     $('.tlp-import-settings').on('click', function() {
         $('.tlp-import-form').slideDown();
     });
-    
+
     // Hide import form
     $('.tlp-import-cancel').on('click', function() {
         $('.tlp-import-form').slideUp();
         $('#tlp-import-data').val('');
     });
-    
+
     // Import settings
     $('.tlp-import-settings-submit').on('click', function() {
-        var data = $('#tlp-import-data').val();
-        
+        var data = $('#tlp-import-data').val().trim();
+        var $button = $(this);
+
         if (!data) {
-            alert('<?php esc_html('Please paste exported settings data.', 'temporary-login-links-premium'); ?>');
+            alert('<?php echo esc_js(__('Please paste exported settings data.', 'temporary-login-links-premium')); ?>');
             return;
         }
-        
+
+        // Basic validation - check if it looks like JSON
+        try {
+            // Try parsing the JSON to validate it
+            JSON.parse(data);
+        } catch (e) {
+            alert('<?php echo esc_js(__('Invalid JSON format. Please ensure you copied the entire exported settings correctly.', 'temporary-login-links-premium')); ?>');
+            return;
+        }
+
+        // Show loading state
+        $button.addClass('button-disabled').text('<?php echo esc_js(__('Importing...', 'temporary-login-links-premium')); ?>');
+
         $.ajax({
             url: ajaxurl,
             type: 'POST',
             data: {
                 action: 'tlp_import_settings',
                 data: data,
-                nonce: '<?php echo esc_js(wp_create_nonce('tlp_import_settings_nonce')); ?>'
+                nonce: '<?php echo wp_create_nonce('tlp_import_settings_nonce'); ?>'
             },
             success: function(response) {
+                // Reset button state
+                $button.removeClass('button-disabled').text('<?php echo esc_js(__('Import', 'temporary-login-links-premium')); ?>');
+
                 if (response.success) {
-                    alert('<?php esc_html('Settings imported successfully! The page will now reload.', 'temporary-login-links-premium'); ?>');
+                    alert('<?php echo esc_js(__('Settings imported successfully! The page will now reload.', 'temporary-login-links-premium')); ?>');
                     location.reload();
                 } else {
-                    alert(response.data);
+                    alert('<?php echo esc_js(__('Error importing settings: ', 'temporary-login-links-premium')); ?>' + response.data);
+                    console.error("Import error:", response);
                 }
+            },
+            error: function(xhr, status, error) {
+                // Reset button state
+                $button.removeClass('button-disabled').text('<?php echo esc_js(__('Import', 'temporary-login-links-premium')); ?>');
+                alert('<?php echo esc_js(__('An error occurred. Please try again.', 'temporary-login-links-premium')); ?>');
+                console.error("AJAX Error:", status, error, xhr.responseText);
             }
         });
     });
+    
+    
+    
+    
 });
 </script>

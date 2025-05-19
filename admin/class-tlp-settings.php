@@ -48,6 +48,14 @@ class TLP_Settings {
     public function __construct($plugin_name, $version) {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
+        
+        // Register AJAX handlers
+        $this->register_ajax_handlers();       
+        
+        // Enqueue required scripts
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_settings_scripts'));
+        
+        
     }
 
     /**
@@ -760,4 +768,139 @@ class TLP_Settings {
         
         return $roles;
     }
+    
+    
+    /**
+     * Add AJAX handlers for settings export/import
+     *
+     * @since    1.0.0
+     */
+    public function register_ajax_handlers() {
+        // Export settings
+        add_action('wp_ajax_tlp_export_settings', array($this, 'ajax_export_settings'));
+
+        // Import settings
+        add_action('wp_ajax_tlp_import_settings', array($this, 'ajax_import_settings'));
+    }
+
+    /**
+     * AJAX handler for exporting settings.
+     *
+     * @since    1.0.0
+     */
+    public function ajax_export_settings() {
+        // Verify nonce
+        if (!check_ajax_referer('tlp_export_settings_nonce', 'nonce', false)) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'temporary-login-links-premium')));
+        }
+
+        // Verify user has permission
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('You do not have permission to export settings.', 'temporary-login-links-premium')));
+        }
+
+        // Get settings
+        $settings = array(
+            'settings' => get_option('temporary_login_links_premium_settings', array()),
+            'branding' => get_option('temporary_login_links_premium_branding', array()),
+            'version' => TEMPORARY_LOGIN_LINKS_PREMIUM_VERSION
+        );
+
+        // Ensure we have a valid array for each setting
+        if (!is_array($settings['settings'])) {
+            $settings['settings'] = array();
+        }
+
+        if (!is_array($settings['branding'])) {
+            $settings['branding'] = array();
+        }
+
+        // Encode settings as JSON with error checking
+        $export_data = json_encode($settings, JSON_PRETTY_PRINT);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            wp_send_json_error(array('message' => 'JSON encoding error: ' . json_last_error_msg()));
+        }
+
+        // Return the export data
+        wp_send_json_success($export_data);
+    }
+
+    /**
+     * AJAX handler for importing settings.
+     *
+     * @since    1.0.0
+     */
+    public function ajax_import_settings() {
+        // Verify nonce
+        if (!check_ajax_referer('tlp_import_settings_nonce', 'nonce', false)) {
+            wp_send_json_error(__('Security check failed.', 'temporary-login-links-premium'));
+        }
+
+        // Verify user has permission
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('You do not have permission to import settings.', 'temporary-login-links-premium'));
+        }
+
+        // Get imported data
+        $import_data = isset($_POST['data']) ? stripslashes(trim($_POST['data'])) : '';
+
+        if (empty($import_data)) {
+            wp_send_json_error(__('No import data provided.', 'temporary-login-links-premium'));
+        }
+
+        // Debug log
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('Raw import data: ' . substr($import_data, 0, 100) . '...');
+        }
+
+        // Try to decode the JSON data
+        $settings = json_decode($import_data, true);
+
+        // Check for JSON errors
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $error_msg = 'JSON decoding error: ' . json_last_error_msg();
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log($error_msg);
+                error_log('JSON error code: ' . json_last_error());
+                // Log a small sample of the problematic data
+                error_log('Data sample: ' . substr($import_data, 0, 200));
+            }
+            wp_send_json_error($error_msg);
+        }
+
+        // Validate the imported data
+        if (!isset($settings['settings']) || !isset($settings['branding'])) {
+            wp_send_json_error(__('Import data is missing required components.', 'temporary-login-links-premium'));
+        }
+
+        // Check if settings and branding are arrays
+        if (!is_array($settings['settings']) || !is_array($settings['branding'])) {
+            wp_send_json_error(__('Invalid data structure: Settings and branding must be arrays.', 'temporary-login-links-premium'));
+        }
+
+        // Update settings
+        update_option('temporary_login_links_premium_settings', $settings['settings']);
+        update_option('temporary_login_links_premium_branding', $settings['branding']);
+
+        // Return success
+        wp_send_json_success(__('Settings imported successfully!', 'temporary-login-links-premium'));
+    }
+    
+    
+    /**
+     * Enqueue required scripts for the settings page.
+     *
+     * @since    1.0.0
+     */
+    public function enqueue_settings_scripts() {
+        // Only enqueue on our settings page
+        if (isset($_GET['page']) && $_GET['page'] === 'temporary-login-links-premium-settings') {
+            // Enqueue jQuery UI Dialog
+            wp_enqueue_script('jquery-ui-dialog');
+            wp_enqueue_style('wp-jquery-ui-dialog');
+        }
+    }    
+    
+    
 }     
