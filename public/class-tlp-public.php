@@ -488,12 +488,12 @@ class TLP_Public {
         
         // Custom CSS
         if (!empty($branding['login_custom_css'])) {
-            $css .= $branding['login_custom_css'];
+            $css .= wp_strip_all_tags($branding['login_custom_css']);
         }
         
         $css .= '</style>';
         
-        echo $css;
+        echo wp_kses_post($css);
     }
 
     /**

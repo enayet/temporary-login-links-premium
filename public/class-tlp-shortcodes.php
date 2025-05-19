@@ -455,7 +455,7 @@ class TLP_Shortcodes {
                 $expiry_status = ' <span class="tlp-status tlp-status-active">' . sprintf(esc_html__('(%s remaining)', 'temporary-login-links-premium'), $time_remaining) . '</span>';
             }
             
-            echo '<li class="tlp-info-expiry"><strong>' . esc_html__('Access Expires:', 'temporary-login-links-premium') . '</strong> ' . esc_html($expiry_date) . $expiry_status . '</li>';
+            echo '<li class="tlp-info-expiry"><strong>' . esc_html__('Access Expires:', 'temporary-login-links-premium') . '</strong> ' . esc_html($expiry_date) . esc_html($expiry_status) . '</li>';
         }
         
         // Show role
@@ -473,7 +473,7 @@ class TLP_Shortcodes {
         // Show access count
         if ($atts['show_accesses'] === 'true') {
             $max_accesses = $link['max_accesses'] > 0 ? ' / ' . esc_html($link['max_accesses']) : '';
-            echo '<li class="tlp-info-accesses"><strong>' . esc_html__('Access Count:', 'temporary-login-links-premium') . '</strong> ' . esc_html($link['access_count']) . $max_accesses . '</li>';
+            echo '<li class="tlp-info-accesses"><strong>' . esc_html__('Access Count:', 'temporary-login-links-premium') . '</strong> ' . esc_html($link['access_count']) . esc_html($max_accesses) . '</li>';
         }
         
         echo '</ul>';

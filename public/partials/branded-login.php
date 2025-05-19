@@ -268,7 +268,7 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
         }
         
         /* Custom CSS */
-        <?php echo $custom_css; ?>
+        <?php echo esc_html($custom_css); ?>
         
         /* Responsive */
         @media screen and (max-width: 600px) {
@@ -304,7 +304,7 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
                         
                         /* translators: %s First name  */
                         $greeting = !empty($user_data['first_name']) ? sprintf(esc_html__('Hello, %s!', 'temporary-login-links-premium'), esc_html($user_data['first_name'])) : esc_html__('Hello!', 'temporary-login-links-premium');
-                        echo $greeting;
+                        echo esc_html($greeting);
                         ?>
                     </p>
                     <p>
@@ -332,7 +332,7 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
                     <?php 
                         /* translators: %s expiry date  */
                         printf(esc_html__('This link will expire on %s.', 'temporary-login-links-premium'),
-                        '<strong>' . date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($link['expiry'])) . '</strong>'
+                        '<strong>' . esc_html(date_i18n(get_option('date_format')) . ' ' . get_option('time_format'), strtotime($link['expiry'])) . '</strong>'
                     ); ?>
                     
                     <?php if ($link['max_accesses'] > 0) : ?>
@@ -340,7 +340,7 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
                         <?php 
                             /* translators: %d max accesses  */
                             printf(esc_html__('This link can be used %d more time(s).', 'temporary-login-links-premium'),
-                            $link['max_accesses'] - $link['access_count']
+                            intval($link['max_accesses'] - $link['access_count'])
                         ); ?>
                     <?php endif; ?>
                 </div>
@@ -366,7 +366,7 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
         <div class="tlp-footer">
             <p><?php 
                 /* translators: Year and company name  */
-                printf(esc_html__('&copy; %1$s %2$s', 'temporary-login-links-premium'), date('Y'), esc_html($company_name)); ?></p>
+                printf(esc_html__('&copy; %1$s %2$s', 'temporary-login-links-premium'), esc_html(date('Y')), esc_html($company_name)); ?></p>
         </div>
     </div>
     
