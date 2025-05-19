@@ -38,11 +38,17 @@ if (isset($_GET['cleared']) && $_GET['cleared'] == 1) {
             <div class="alignleft actions">
                 <form method="get">
                     <input type="hidden" name="page" value="temporary-login-links-premium-security">
+                    
                     <select name="status">
                         <option value=""><?php echo esc_html__('All Statuses', 'temporary-login-links-premium'); ?></option>
                         <option value="failed" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'failed'); ?>><?php echo esc_html__('Failed Attempts', 'temporary-login-links-premium'); ?></option>
                         <option value="blocked" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'blocked'); ?>><?php echo esc_html__('Blocked IPs', 'temporary-login-links-premium'); ?></option>
-                    </select>
+                        <option value="invalid_token" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'invalid_token'); ?>><?php echo esc_html__('Invalid Token', 'temporary-login-links-premium'); ?></option>
+                        <option value="expired" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'expired'); ?>><?php echo esc_html__('Expired Links', 'temporary-login-links-premium'); ?></option>
+                        <option value="inactive" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'inactive'); ?>><?php echo esc_html__('Inactive Links', 'temporary-login-links-premium'); ?></option>
+                        <option value="ip_restricted" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'ip_restricted'); ?>><?php echo esc_html__('IP Restricted', 'temporary-login-links-premium'); ?></option>
+                        <option value="max_accesses" <?php selected(isset($_GET['status']) ? $_GET['status'] : '', 'max_accesses'); ?>><?php echo esc_html__('Max Accesses Reached', 'temporary-login-links-premium'); ?></option>
+                    </select>                    
                     
                     <input type="text" name="search" placeholder="<?php esc_attr_e('Search logs...', 'temporary-login-links-premium'); ?>" value="<?php echo isset($_GET['search']) ? esc_attr($_GET['search']) : ''; ?>">
 

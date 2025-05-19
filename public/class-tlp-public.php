@@ -161,9 +161,10 @@ class TLP_Public {
         global $wpdb;
         $table_name = $wpdb->prefix . 'temporary_login_links';
         $link_data = $wpdb->get_row($wpdb->prepare(
-            "SELECT id, user_email, is_active, expiry, max_accesses, access_count, ip_restriction FROM $table_name WHERE link_token = %s",
+            "SELECT id, user_email, is_active, expiry, max_accesses, access_count, ip_restriction, redirect_to FROM $table_name WHERE link_token = %s",
             $token
         ), ARRAY_A);
+    
 
         // If token doesn't exist in database, log to security logs
         if (!$link_data) {
@@ -196,7 +197,6 @@ class TLP_Public {
                 return;
             }
             // If branding is enabled, the error will be shown in the branded template
-            // The branded-login.php file will handle displaying the appropriate error
             return;
         }
 
@@ -218,12 +218,15 @@ class TLP_Public {
                 $this->show_login_error($result->get_error_message());
                 return;
             }
+            //exit ($link_data['redirect_to']);
+            // Use redirect_to from link_data if available, otherwise use the one from result
+            $redirect_to = !empty($link_data['redirect_to']) ? $link_data['redirect_to'] : $result['redirect_to'];
 
-            // Log in the user
-            $this->login_user($result['user_id'], $result['redirect_to']);
+            // Log in the user with the correct redirect URL
+            $this->login_user($result['user_id'], $redirect_to);
         }
         // If branding is enabled and not auto-login, the branded login page will be loaded
-    }    
+    } 
     
     
     
@@ -360,26 +363,34 @@ class TLP_Public {
     private function login_user($user_id, $redirect_to) {
         // Get the user
         $user = get_user_by('id', $user_id);
-        
+
         if (!$user) {
             $this->show_login_error(__('User not found.', 'temporary-login-links-premium'));
             return;
         }
-        
+
         // Set auth cookie
         wp_set_auth_cookie($user_id, false);
-        
+
         // Set current user
         wp_set_current_user($user_id);
-        
+
         // Update user last login
         update_user_meta($user_id, 'tlp_last_login', current_time('mysql'));
-        
+
         // Send admin notification if enabled
         $this->maybe_send_admin_notification($user);
-        
+
+        // If redirect_to is empty, use admin_url as fallback
+        if (empty($redirect_to)) {
+            $redirect_to = admin_url();
+        }
+
+        // For debugging - can be removed in production version
+        error_log('Redirecting to: ' . $redirect_to);
+
         // Redirect after login
-        wp_redirect($redirect_to);
+        wp_safe_redirect($redirect_to);
         exit;
     }
 

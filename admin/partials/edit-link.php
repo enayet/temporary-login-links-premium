@@ -321,8 +321,12 @@ jQuery(document).ready(function($) {
         $('#custom_expiry').datetimepicker({
             dateFormat: 'yy-mm-dd',
             timeFormat: 'HH:mm:ss',
-            minDate: 0, // Only future dates
-            showSecond: true
+            changeMonth: true,
+            changeYear: true,
+            minDate: 0,
+            yearRange: 'c:c+10',
+            controlType: 'select',
+            oneLine: true
         });
     }
     

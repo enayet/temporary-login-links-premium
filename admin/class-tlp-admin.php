@@ -168,6 +168,24 @@ class TLP_Admin {
             if ($page === 'temporary-login-links-premium-links' && 
                 isset($_GET['action']) && ($_GET['action'] === 'create' || $_GET['action'] === 'edit')) {
                 wp_enqueue_script('jquery-ui-datepicker');
+
+                // Add jQuery UI Timepicker addon
+                wp_enqueue_script(
+                    'jquery-ui-timepicker-addon',
+                    plugin_dir_url(__FILE__) . 'js/jquery-ui-timepicker-addon.min.js',
+                    array('jquery-ui-datepicker'),
+                    '1.6.3',
+                    true
+                );
+
+                // Add the timepicker CSS
+                wp_enqueue_style(
+                    'jquery-ui-timepicker-addon',
+                    plugin_dir_url(__FILE__) . 'css/jquery-ui-timepicker-addon.min.css',
+                    array(),
+                    '1.6.3'
+                );
+
                 add_action('admin_footer', array($this, 'add_datepicker_init_script'));
             }
 
@@ -191,15 +209,18 @@ class TLP_Admin {
         <script type="text/javascript">
         jQuery(document).ready(function($) {
             // Initialize datepicker for custom expiry date
-            if ($('#custom_expiry').length) {
-                $('#custom_expiry').datepicker({
+            //if ($('#custom_expiry').length) {
+                $('#custom_expiry').datetimepicker({
                     dateFormat: 'yy-mm-dd',
+                    timeFormat: 'HH:mm:ss',
                     changeMonth: true,
                     changeYear: true,
-                    minDate: 0, // Only future dates
-                    yearRange: 'c:c+10' // Current year to 10 years in the future
+                    minDate: 0,
+                    yearRange: 'c:c+10',
+                    controlType: 'select',
+                    oneLine: true
                 });
-            }
+            //}
         });
         </script>
         <?php
