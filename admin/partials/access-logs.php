@@ -99,16 +99,6 @@ if (!defined('WPINC')) {
                         ?>
                     </span>
                     <?php
-//                    echo wp_kses_post(
-//                        paginate_links(array(
-//                            'base' => add_query_arg('paged', '%#%'),
-//                            'format' => '',
-//                            'prev_text' => '&laquo;',
-//                            'next_text' => '&raquo;',
-//                            'total' => ceil($logs['total_items'] / $logs['per_page']),
-//                            'current' => $logs['page'],
-//                        ))
-//                    );
                     
                     $pagination = paginate_links(array(
                         'base' => add_query_arg('paged', '%#%'),
@@ -262,16 +252,6 @@ if (!defined('WPINC')) {
                             ?>
                         </span>
                         <?php
-//                        echo wp_kses_post(
-//                            paginate_links(array(
-//                                'base' => add_query_arg('paged', '%#%'),
-//                                'format' => '',
-//                                'prev_text' => '&laquo;',
-//                                'next_text' => '&raquo;',
-//                                'total' => ceil($logs['total_items'] / $logs['per_page']),
-//                                'current' => $logs['page'],
-//                            ))
-//                        );
                         
                         $pagination = paginate_links(array(
                             'base' => add_query_arg('paged', '%#%'),
@@ -289,81 +269,3 @@ if (!defined('WPINC')) {
         <?php endif; ?>
     </div>
 </div>
-
-<style>
-/* Styles for the access logs page */
-.tlp-access-logs-page {
-    margin-top: 20px;
-}
-
-.tlp-log-info {
-    margin-bottom: 20px;
-    border-left: 4px solid #0073aa;
-    padding: 10px 15px;
-    background: #f8f8f8;
-}
-
-.tlp-status {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.tlp-status-active {
-    background-color: #dff2e0;
-    color: #2a8b32;
-}
-
-.tlp-status-inactive {
-    background-color: #f1f1f1;
-    color: #777;
-}
-
-.tlp-status-expired {
-    background-color: #fbe9e7;
-    color: #c62828;
-}
-
-.tlp-status-error {
-    background-color: #fbe9e7;
-    color: #c62828;
-}
-
-.tlp-status-info {
-    background-color: #e8f4fd;
-    color: #0277bd;
-}
-
-.tlp-truncate {
-    display: inline-block;
-    max-width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.tlp-date-range {
-    display: inline-block;
-    margin: 0 5px;
-}
-
-.tlp-date-range input[type="text"] {
-    width: 110px;
-}
-</style>
-
-<script type="text/javascript">
-jQuery(document).ready(function($) {
-    // Initialize datepickers
-    if ($.fn.datepicker) {
-        $('.tlp-datepicker').datepicker({
-            dateFormat: 'yy-mm-dd',
-            changeMonth: true,
-            changeYear: true,
-            maxDate: 0
-        });
-    }
-});
-</script>
