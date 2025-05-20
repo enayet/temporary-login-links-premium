@@ -185,21 +185,9 @@ if (!defined('WPINC')) {
                     </div>
                     
                     <div class="tlp-branding-preview-form" style="background-color: <?php echo esc_attr(isset($branding['login_form_background']) ? $branding['login_form_background'] : '#ffffff'); ?>; color: <?php echo esc_attr(isset($branding['login_form_text_color']) ? $branding['login_form_text_color'] : '#333333'); ?>;">
-                        <div class="tlp-form-row">
-                            <label for="tlp_preview_username"><?php echo esc_html__('Username or Email Address', 'temporary-login-links-premium'); ?></label>
-                            <input type="text" id="tlp_preview_username" disabled>
-                        </div>
+ 
                         
-                        <div class="tlp-form-row">
-                            <label for="tlp_preview_password"><?php echo esc_html__('Password', 'temporary-login-links-premium'); ?></label>
-                            <input type="password" id="tlp_preview_password" disabled>
-                        </div>
-                        
-                        <div class="tlp-form-row">
-                            <button type="button" style="background-color: <?php echo esc_attr(isset($branding['login_button_color']) ? $branding['login_button_color'] : '#0085ba'); ?>; color: <?php echo esc_attr(isset($branding['login_button_text_color']) ? $branding['login_button_text_color'] : '#ffffff'); ?>;">
-                                <?php echo esc_html__('Log In', 'temporary-login-links-premium'); ?>
-                            </button>
-                        </div>
+
                     </div>
                 </div>
                 
@@ -262,6 +250,11 @@ if (!defined('WPINC')) {
 </div>
 
 <script type="text/javascript">
+
+/**
+ * Optimized and merged branding preview script for temporary-login-links-premium
+ * This script handles color pickers, media uploads, and enhanced preview functionality
+ */
 jQuery(document).ready(function($) {
     // Initialize color pickers
     if ($.fn.wpColorPicker) {
@@ -283,9 +276,9 @@ jQuery(document).ready(function($) {
         var removeButton = button.siblings('.tlp-remove-media');
         
         var customUploader = wp.media({
-            title: '<?php esc_html__('Select Logo', 'temporary-login-links-premium'); ?>',
+            title: '<?php esc_html_e("Select Logo", "temporary-login-links-premium"); ?>',
             button: {
-                text: '<?php esc_html__('Use this image', 'temporary-login-links-premium'); ?>'
+                text: '<?php esc_html_e("Use this image", "temporary-login-links-premium"); ?>'
             },
             multiple: false
         }).on('select', function() {
@@ -320,46 +313,278 @@ jQuery(document).ready(function($) {
         updatePreview();
     });
     
-    // Update preview function
+    // Add reset buttons to color pickers
+    addResetButtonsToColorPickers();
+    
+    // Add CSS for enhanced preview and color pickers
+    var customCSS = `
+        /* Color picker styles */
+        .tlp-color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .tlp-reset-color {
+            white-space: nowrap;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        /* Main preview container styling */
+        .tlp-branding-preview {
+            padding: 40px 20px;
+            border-radius: 8px;
+            text-align: center;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Logo styling */
+        .tlp-branding-preview-logo {
+            margin-bottom: 30px;
+        }
+        .tlp-branding-preview-logo img {
+            max-width: 280px;
+            max-height: 80px;
+        }
+        .tlp-branding-preview-logo h2 {
+            font-size: 24px !important;
+            margin: 0 !important;
+            font-weight: 600;
+        }
+        
+        /* Welcome text styling */
+        .tlp-branding-preview-welcome {
+            margin-bottom: 30px;
+            font-size: 18px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+        
+        /* Form styling to match actual login page */
+        .tlp-branding-preview-form {
+            padding: 25px;
+            border-radius: 6px;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Greeting message within form */
+        .tlp-form-greeting {
+            font-size: 20px;
+            margin-bottom: 18px;
+            font-weight: 500;
+        }
+        
+        /* Access message within form */
+        .tlp-form-access-message {
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        /* Success message styling */
+        .tlp-success-message {
+            background-color: #dff2d8;
+            color: #3c763d;
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        /* Button styling to match actual */
+        .tlp-access-button {
+            display: block;
+            text-align: center;
+            margin: 20px auto 10px;
+            width: 100%;
+            max-width: 200px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+        
+        /* Expiry message */
+        .tlp-expiry-message {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 15px;
+        }
+    `;
+    
+    $('<style id="tlp-enhanced-preview-styles">' + customCSS + '</style>').appendTo('head');
+    
+    /**
+     * Adds reset buttons to all color pickers with default values
+     */
+    function addResetButtonsToColorPickers() {
+        // Define default colors for each color picker
+        var defaultColors = {
+            'login_background_color': '#f1f1f1',
+            'login_form_background': '#ffffff',
+            'login_form_text_color': '#333333',
+            'login_button_color': '#0085ba',
+            'login_button_text_color': '#ffffff'
+        };
+
+        // For each color picker wrapper, add a reset button
+        $('.tlp-color-picker-wrapper').each(function() {
+            var $wrapper = $(this);
+            var $input = $wrapper.find('.tlp-color-picker');
+            var inputId = $input.attr('id');
+            
+            // Only proceed if we have a default for this color picker
+            if (defaultColors[inputId]) {
+                // Create reset button if it doesn't exist
+                if ($wrapper.find('.tlp-reset-color').length === 0) {
+                    var $resetButton = $('<button type="button" class="button button-small tlp-reset-color">Reset to Default</button>');
+                    
+                    // Store data attributes
+                    $resetButton.data('default-color', defaultColors[inputId]);
+                    $resetButton.data('target-input', inputId);
+                    
+                    // Insert button after the color picker container
+                    $wrapper.find('.wp-picker-container').after($resetButton);
+                    
+                    // Add click handler
+                    $resetButton.on('click', function(e) {
+                        e.preventDefault();
+                        var defaultColor = $(this).data('default-color');
+                        var targetInput = $(this).data('target-input');
+                        
+                        // Set the color picker to the default value
+                        $('#' + targetInput).wpColorPicker('color', defaultColor);
+                        
+                        // Update preview
+                        setTimeout(function() {
+                            updatePreview();
+                        }, 100);
+                    });
+                }
+            }
+        });
+    }
+    
+    // Add reset all to defaults button
+    if ($('#tlp-reset-all-colors').length === 0) {
+        var $resetAllButton = $('<button type="button" id="tlp-reset-all-colors" class="button">Reset All Colors to Default</button>');
+        $resetAllButton.css({
+            'margin-top': '15px',
+            'margin-bottom': '15px'
+        });
+        
+        // Insert before the submit button
+        $('.tlp-branding-form .submit').before($resetAllButton);
+        
+        // Add click handler
+        $resetAllButton.on('click', function(e) {
+            e.preventDefault();
+            
+            // Default colors
+            var defaults = {
+                'login_background_color': '#f1f1f1',
+                'login_form_background': '#ffffff',
+                'login_form_text_color': '#333333',
+                'login_button_color': '#0085ba',
+                'login_button_text_color': '#ffffff'
+            };
+            
+            // Reset each color picker
+            $.each(defaults, function(id, color) {
+                $('#' + id).wpColorPicker('color', color);
+            });
+            
+            // Update preview
+            setTimeout(function() {
+                updatePreview();
+            }, 100);
+        });
+    }
+    
+    // Main function to update preview (replaces original updatePreview)
     function updatePreview() {
         // Get values
         var enableBranding = $('#enable_branding').is(':checked');
-        var companyName = $('#company_name').val();
+        var companyName = $('#company_name').val() || 'Company Name';
         var logoUrl = $('#login_logo').val();
-        var backgroundColor = $('#login_background_color').val();
-        var formBackground = $('#login_form_background').val();
-        var formTextColor = $('#login_form_text_color').val();
-        var buttonColor = $('#login_button_color').val();
-        var buttonTextColor = $('#login_button_text_color').val();
-        var welcomeText = $('#login_welcome_text').val();
+        var welcomeText = $('#login_welcome_text').val() || 'Welcome! You have been granted temporary access to this site.';
+        var backgroundColor = $('#login_background_color').val() || '#f1f1f1';
+        var formBackground = $('#login_form_background').val() || '#ffffff';
+        var formTextColor = $('#login_form_text_color').val() || '#333333';
+        var buttonColor = $('#login_button_color').val() || '#0085ba';
+        var buttonTextColor = $('#login_button_text_color').val() || '#ffffff';
         var emailBranding = $('#email_branding').is(':checked');
         
-        // Update login preview
+        // Update login preview container
         $('.tlp-branding-preview').css('background-color', backgroundColor);
         
+        // Update logo
         if (logoUrl) {
             $('.tlp-branding-preview-logo').html('<img src="' + logoUrl + '" alt="Logo">');
         } else {
             $('.tlp-branding-preview-logo').html('<h2 style="color: ' + formTextColor + '">' + companyName + '</h2>');
         }
         
-        $('.tlp-branding-preview-form').css({
+        // Update welcome text
+        $('.tlp-branding-preview-welcome').html(welcomeText);
+        
+        // Create the enhanced preview structure if it doesn't exist
+        var $previewContainer = $('.tlp-branding-preview');
+        var $form = $('.tlp-branding-preview-form');
+        
+        if ($form.find('.tlp-form-greeting').length === 0) {
+            // Rebuild the form content to match actual login page
+            $form.empty();
+            
+            // Add greeting and access message
+            $form.append('<div class="tlp-form-greeting">Hello, user!</div>');
+            $form.append('<div class="tlp-form-access-message">You have been granted temporary access to ' + companyName + ' with Editor privileges.</div>');
+        } else {
+            // Update company name in the message
+            $form.find('.tlp-form-access-message').html('You have been granted temporary access to ' + companyName + ' with Editor privileges.');
+        }
+        
+        // Add success message and access button if not present
+        if ($previewContainer.find('.tlp-success-message').length === 0) {
+            var $successMessage = $('<div class="tlp-success-message">Your temporary login link is valid and ready to use.</div>');
+            $successMessage.insertAfter($form);
+            
+            var $accessButton = $('<button class="tlp-access-button">Access Site</button>');
+            $accessButton.insertAfter($successMessage);
+            
+            var $expiryMessage = $('<div class="tlp-expiry-message">This link will expire on May 20, 2025.</div>');
+            $expiryMessage.insertAfter($accessButton);
+        }
+        
+        // Update form and button colors
+        $form.css({
             'background-color': formBackground,
             'color': formTextColor
         });
         
-        $('.tlp-branding-preview-form button').css({
+        $('.tlp-form-greeting, .tlp-form-access-message').css('color', formTextColor);
+        
+        $('.tlp-access-button').css({
             'background-color': buttonColor,
             'color': buttonTextColor
         });
-        
-        $('.tlp-branding-preview-welcome').html(welcomeText);
         
         // Update email preview
         $('.tlp-email-preview-header').css('background-color', backgroundColor);
         
         if (logoUrl) {
-            $('.tlp-email-preview-header').html('<img src="' + logoUrl + '" alt="Logo">');
+            $('.tlp-email-preview-header').html('<img src="' + logoUrl + '" alt="Logo" class="tlp-email-logo">');
         } else {
             $('.tlp-email-preview-header').html('<h2 style="color: ' + formTextColor + '">' + companyName + '</h2>');
         }
@@ -369,13 +594,13 @@ jQuery(document).ready(function($) {
             'color': buttonTextColor
         });
         
-        $('.tlp-email-preview-content p:nth-child(2) strong').text(companyName);
-        $('.tlp-email-preview-footer p').html('<?php esc_html__('Regards,<br>', 'temporary-login-links-premium'); ?>' + companyName + ' <?php esc_html__('Team', 'temporary-login-links-premium'); ?>');
-        
+        $('.tlp-email-preview-content p strong').text(companyName);
+        $('.tlp-email-preview-footer p').html('Regards,<br>' + companyName + ' Team');
         $('.tlp-email-preview-footer').css('background-color', backgroundColor);
     }
     
-    // Initially update preview
+    // Initialize preview
     updatePreview();
-});
+});    
+    
 </script>
