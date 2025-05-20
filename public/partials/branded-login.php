@@ -332,7 +332,7 @@ $auto_login_url = add_query_arg('auto', '1', $_SERVER['REQUEST_URI']);
                     <?php 
                         /* translators: %s expiry date  */
                         printf(esc_html__('This link will expire on %s.', 'temporary-login-links-premium'),
-                        '<strong>' . esc_html(date_i18n(get_option('date_format')) . ' ' . get_option('time_format'), strtotime($link['expiry'])) . '</strong>'
+                        '<strong>' . esc_html(date_i18n('F j, Y H:i:s', strtotime($link['expiry']))) . '</strong>'
                     ); ?>
                     
                     <?php if ($link['max_accesses'] > 0) : ?>

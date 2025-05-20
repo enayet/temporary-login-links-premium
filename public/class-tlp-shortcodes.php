@@ -62,6 +62,451 @@ class TLP_Shortcodes {
         $this->version = $version;
         $this->links = $links;
     }
+    
+    
+    
+/**
+ * Get the inline CSS styles for shortcodes.
+ *
+ * @since    1.0.0
+ * @return   string    The inline CSS styles.
+ */
+    private function get_inline_styles() {
+        // Check if inline styles have already been added to this page
+        static $styles_added = false;
+
+        // If styles already added, return empty string
+        if ($styles_added) {
+            return '';
+        }
+
+        // Mark styles as added
+        $styles_added = true;
+
+        // Start output buffer
+        ob_start();
+        ?>
+    <style>
+    /* Base styles for all TLP components */
+    .tlp-shortcode-form,
+    .tlp-shortcode-login-form,
+    .tlp-user-info,
+    .tlp-links-list,
+    .tlp-message,
+    .tlp-link-url {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #333;
+        box-sizing: border-box;
+    }
+
+    .tlp-shortcode-form *,
+    .tlp-shortcode-login-form *,
+    .tlp-user-info *,
+    .tlp-links-list * {
+        box-sizing: border-box;
+    }
+
+    /* Message Styles */
+    .tlp-message {
+        margin: 20px 0;
+        padding: 15px 20px;
+        border-radius: 6px;
+        border-left: 4px solid transparent;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        animation: tlp-fade-in 0.4s ease-out;
+    }
+
+    .tlp-success {
+        background-color: #f0f8f0;
+        color: #2a8b32;
+        border-left-color: #2a8b32;
+    }
+
+    .tlp-error {
+        background-color: #fff5f5;
+        color: #d32f2f;
+        border-left-color: #d32f2f;
+    }
+
+    .tlp-notice {
+        background-color: #f0f7fd;
+        color: #0277bd;
+        border-left-color: #0277bd;
+    }
+
+    /* Status Badge Styles */
+    .tlp-status {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 0.85em;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tlp-status-active {
+        background-color: rgba(46, 204, 113, 0.15);
+        color: #27ae60;
+    }
+
+    .tlp-status-inactive {
+        background-color: rgba(189, 195, 199, 0.15);
+        color: #7f8c8d;
+    }
+
+    .tlp-status-expired {
+        background-color: rgba(231, 76, 60, 0.15);
+        color: #c0392b;
+    }
+
+    /* Form Styles */
+    .tlp-shortcode-form,
+    .tlp-shortcode-login-form {
+        max-width: 550px;
+        margin: 30px auto;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        transition: all 0.2s ease;
+    }
+
+    .tlp-form-field {
+        margin-bottom: 20px;
+    }
+
+    .tlp-form-field label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 0.95em;
+        color: #444;
+    }
+
+    .tlp-form-field label .required {
+        color: #e74c3c;
+        margin-left: 3px;
+    }
+
+    .tlp-form-field input[type="text"],
+    .tlp-form-field input[type="email"],
+    .tlp-form-field input[type="password"],
+    .tlp-form-field select,
+    .tlp-form-field textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background-color: #fafafa;
+        font-size: 15px;
+        transition: all 0.2s ease;
+    }
+
+    .tlp-form-field input[type="text"]:focus,
+    .tlp-form-field input[type="email"]:focus,
+    .tlp-form-field input[type="password"]:focus,
+    .tlp-form-field select:focus,
+    .tlp-form-field textarea:focus {
+        border-color: #4e9bf1;
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(78, 155, 241, 0.15);
+        outline: none;
+    }
+
+    .tlp-form-field input[type="text"]::placeholder,
+    .tlp-form-field input[type="email"]::placeholder,
+    .tlp-form-field input[type="password"]::placeholder,
+    .tlp-form-field textarea::placeholder {
+        color: #aaa;
+    }
+
+    .tlp-form-field select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+
+    .tlp-form-submit {
+        margin-top: 25px;
+    }
+
+    .tlp-form-submit input[type="submit"],
+    .tlp-button {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #4e9bf1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        text-align: center;
+        line-height: 1.5;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .tlp-form-submit input[type="submit"]:hover,
+    .tlp-button:hover {
+        background: #2f80ed;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .tlp-form-submit input[type="submit"]:active,
+    .tlp-button:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Temporary Login Link URL Display */
+    .tlp-link-url {
+        background: #f7f9fc;
+        border: 1px solid #e1e7ef;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 20px 0;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        animation: tlp-fade-in 0.4s ease-out;
+    }
+
+    .tlp-link-input {
+        flex: 1;
+        min-width: 200px;
+        padding: 10px 15px;
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        color: #333;
+    }
+
+    .tlp-copy-link {
+        padding: 10px 20px;
+        background: #4e9bf1;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .tlp-copy-link:hover {
+        background: #2f80ed;
+    }
+
+    /* User Info Display */
+    .tlp-user-info {
+        background: #fff;
+        border: 1px solid #e1e7ef;
+        border-radius: 8px;
+        padding: 25px;
+        margin: 25px 0;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    .tlp-info-heading {
+        margin-top: 0;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .tlp-info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tlp-info-list li {
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f5f5f5;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .tlp-info-list li:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .tlp-info-list strong {
+        display: inline-block;
+        min-width: 150px;
+        font-weight: 600;
+    }
+
+    .tlp-remaining-time {
+        font-size: 0.9em;
+        color: #4e9bf1;
+        margin-left: 5px;
+    }
+
+    /* Temporary Links List Table */
+    .tlp-links-list {
+        margin: 30px 0;
+    }
+
+    .tlp-links-table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        background: #fff;
+    }
+
+    .tlp-links-table th,
+    .tlp-links-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .tlp-links-table th {
+        background: #f8fafc;
+        font-weight: 600;
+        color: #333;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .tlp-links-table thead tr {
+        border-bottom: 2px solid #e1e7ef;
+    }
+
+    .tlp-links-table tbody tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .tlp-links-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .tlp-links-table .button {
+        margin-right: 5px;
+    }
+
+    .tlp-links-table .button-small {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 4px;
+        background: #f5f7fa;
+        border: 1px solid #e1e7ef;
+        color: #555;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    .tlp-links-table .button-small:hover {
+        background: #e8edf5;
+        color: #333;
+    }
+
+    /* Responsive styles */
+    @media screen and (max-width: 768px) {
+        .tlp-shortcode-form,
+        .tlp-shortcode-login-form {
+            padding: 20px;
+        }
+
+        .tlp-link-url {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .tlp-copy-link {
+            width: 100%;
+        }
+
+        .tlp-info-list strong {
+            min-width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .tlp-links-table thead {
+            display: none;
+        }
+
+        .tlp-links-table tbody tr {
+            display: block;
+            margin-bottom: 15px;
+            border: 1px solid #e1e7ef;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .tlp-links-table tbody td {
+            display: block;
+            text-align: right;
+            padding: 12px 15px;
+            position: relative;
+            padding-left: 35%;
+            min-height: 50px;
+        }
+
+        .tlp-links-table td:before {
+            content: attr(data-label);
+            position: absolute;
+            left: 15px;
+            width: 30%;
+            font-weight: 600;
+            text-align: left;
+        }
+    }
+
+    /* Animations */
+    @keyframes tlp-fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Accessibility improvements */
+    .tlp-form-field input[type="text"]:focus,
+    .tlp-form-field input[type="email"]:focus,
+    .tlp-form-field input[type="password"]:focus,
+    .tlp-form-field select:focus,
+    .tlp-form-field textarea:focus,
+    .tlp-copy-link:focus,
+    .tlp-button:focus,
+    .tlp-form-submit input[type="submit"]:focus {
+        outline: 2px solid #4e9bf1;
+        outline-offset: 1px;
+    }
+    </style>
+        <?php
+        return ob_get_clean();
+    }    
+    
+    
 
     /**
      * Register all shortcodes.
@@ -147,6 +592,9 @@ class TLP_Shortcodes {
         
         // Start output buffering
         ob_start();
+        
+        // Include the inline styles
+        echo $this->get_inline_styles();        
         
         // Display message if any
         if (!empty($message)) {
@@ -332,6 +780,9 @@ class TLP_Shortcodes {
         // Start output buffering
         ob_start();
         
+        // Include the inline styles
+        echo $this->get_inline_styles();        
+        
         // Display the form
         echo '<div class="tlp-shortcode-login-form ' . esc_attr($atts['class']) . '">';
         
@@ -410,6 +861,9 @@ class TLP_Shortcodes {
         
         // Start output buffering
         ob_start();
+        
+        // Include the inline styles
+        echo $this->get_inline_styles();
         
         echo '<div class="tlp-user-info ' . esc_attr($atts['class']) . '">';
         
@@ -536,7 +990,10 @@ class TLP_Shortcodes {
             $content = '<div class="' . esc_attr($atts['class']) . '">' . $content . '</div>';
         }
         
-        return $content;
+        // Get the inline styles and add them to the beginning of the content
+        $styles = $this->get_inline_styles();        
+        
+        return $styles . $content;
     }
 
     /**
@@ -673,6 +1130,9 @@ class TLP_Shortcodes {
         
         // Start output buffering
         ob_start();
+        
+        // Include the inline styles
+        echo $this->get_inline_styles();        
         
         echo '<div class="tlp-links-list ' . esc_attr($atts['class']) . '">';
         

@@ -199,7 +199,7 @@ class TLP_Links {
         );
 
         if (isset($preset_durations[$duration])) {
-            $expiry_date = date('Y-m-d H:i:s', strtotime($preset_durations[$duration]));
+            $expiry_date = gmdate('Y-m-d H:i:s', strtotime($preset_durations[$duration]));
         } elseif (preg_match('/^custom_(.+)$/', $duration, $matches)) {
             // Handle custom date
             $custom_date = $matches[1];
@@ -231,7 +231,7 @@ class TLP_Links {
                 return new WP_Error('invalid_duration', __('Invalid duration. Please use a valid time format.', 'temporary-login-links-premium'));
             }
 
-            $expiry_date = date('Y-m-d H:i:s', $time);
+            $expiry_date = gmdate('Y-m-d H:i:s', $time);
         }
 
         return $expiry_date;
@@ -1039,11 +1039,12 @@ private function get_client_ip() {
         $offset = ( $page - 1 ) * $per_page;
         
 
-        $prepared_sql = $wpdb->prepare("$sql LIMIT %d, %d", $offset, $per_page);        
+        //$prepared_sql = $wpdb->prepare("$sql LIMIT %d, %d", $offset, $per_page);        
         
         
         // Get results
-        $results = $wpdb->get_results( $prepared_sql, ARRAY_A );
+        //$results = $wpdb->get_results( $prepared_sql, ARRAY_A );
+        $results = $wpdb->get_results( $wpdb->prepare("$sql LIMIT %d, %d", $offset, $per_page), ARRAY_A );
         
         // Count total items
 
@@ -1139,7 +1140,7 @@ private function get_client_ip() {
         $days_to_keep = isset( $settings['keep_expired_links_days'] ) ? absint( $settings['keep_expired_links_days'] ) : 30;
         
         // Calculate date threshold
-        $threshold = date( 'Y-m-d H:i:s', strtotime( '-' . $days_to_keep . ' days' ) );
+        $threshold = gmdate( 'Y-m-d H:i:s', strtotime( '-' . $days_to_keep . ' days' ) );
         
         // Get expired links older than threshold
         $links = $wpdb->get_results(

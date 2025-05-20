@@ -337,7 +337,7 @@ jQuery(document).ready(function($) {
             type: 'POST',
             data: {
                 action: 'tlp_export_settings',
-                nonce: '<?php echo wp_create_nonce('tlp_export_settings_nonce'); ?>'
+                nonce: '<?php echo esc_js(wp_create_nonce('tlp_export_settings_nonce')); ?>'
             },
             success: function(response) {
                 // Reset button state
@@ -434,7 +434,7 @@ jQuery(document).ready(function($) {
             data: {
                 action: 'tlp_import_settings',
                 data: data,
-                nonce: '<?php echo wp_create_nonce('tlp_import_settings_nonce'); ?>'
+                nonce: '<?php echo esc_js(wp_create_nonce('tlp_import_settings_nonce')); ?>'
             },
             success: function(response) {
                 // Reset button state
