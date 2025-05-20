@@ -904,15 +904,6 @@ class TLP_Admin {
         
         // Sanitize and validate
 
-        
-        
-        
-        
-        
-        
-        
-
-// Sanitize and validate
         $sanitized = $this->security->sanitize_form_inputs($data, $fields);
         
         if (is_wp_error($sanitized)) {
@@ -926,12 +917,15 @@ class TLP_Admin {
             return new WP_Error('not_found', __('Link not found.', 'temporary-login-links-premium'));
         }
         
-        // Process expiry
+        // Process expiry        
         if ($sanitized['expiry'] === 'custom' && !empty($sanitized['custom_expiry'])) {
-            $expiry = 'custom_' . $sanitized['custom_expiry'];
+            // Append end-of-day time (23:59:59) to the custom date
+            $expiry_date = $sanitized['custom_expiry'] . ' 23:59:59';
+            $expiry = 'custom_' . $expiry_date;
         } else {
             $expiry = $sanitized['expiry'];
-        }
+        }        
+        
         
         // Check if expiry date has changed
         if (strpos($expiry, 'custom_') === 0) {

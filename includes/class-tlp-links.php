@@ -181,7 +181,7 @@ class TLP_Links {
      * @param    string    $duration    The duration string (e.g., '7 days', '1 month').
      * @return   string|WP_Error        The calculated expiry date in MySQL format or an error.
      */
-    private function calculate_expiry_date( $duration ) {
+    public static function calculate_expiry_date($duration) {
         // Handle predefined durations
         $preset_durations = array(
             '1 hour'    => '+1 hour',
@@ -197,36 +197,43 @@ class TLP_Links {
             '6 months'  => '+6 months',
             '1 year'    => '+1 year',
         );
-        
-        if ( isset( $preset_durations[ $duration ] ) ) {
-            $expiry_date = gmdate( 'Y-m-d H:i:s', strtotime( $preset_durations[ $duration ] ) );
-        } elseif ( preg_match( '/^custom_(.+)$/', $duration, $matches ) ) {
+
+        if (isset($preset_durations[$duration])) {
+            $expiry_date = date('Y-m-d H:i:s', strtotime($preset_durations[$duration]));
+        } elseif (preg_match('/^custom_(.+)$/', $duration, $matches)) {
             // Handle custom date
             $custom_date = $matches[1];
-            
-            // Validate date format (YYYY-MM-DD HH:MM:SS)
-            if ( ! preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $custom_date ) ) {
-                /* translators: %s: Date format example */
-                return new WP_Error( 'invalid_date', __( 'Invalid date format. Please use YYYY-MM-DD HH:MM:SS.', 'temporary-login-links-premium' ) );
+
+            // Validate date format (YYYY-MM-DD)
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $custom_date)) {
+                // Check if it's already a full datetime format
+                if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $custom_date)) {
+                    return new WP_Error('invalid_date', __('Invalid date format. Please use YYYY-MM-DD.', 'temporary-login-links-premium'));
+                }
             }
-            
+
+            // If only a date is provided, append end-of-day time
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $custom_date)) {
+                $custom_date .= ' 23:59:59';
+            }
+
             // Check if date is in the future
-            if ( strtotime( $custom_date ) <= time() ) {
-                return new WP_Error( 'past_date', __( 'The expiry date must be in the future.', 'temporary-login-links-premium' ) );
+            if (strtotime($custom_date) <= time()) {
+                return new WP_Error('past_date', __('The expiry date must be in the future.', 'temporary-login-links-premium'));
             }
-            
+
             $expiry_date = $custom_date;
         } else {
             // Try to parse as a strtotime-compatible string
-            $time = strtotime( $duration );
-            
-            if ( false === $time || $time <= time() ) {
-                return new WP_Error( 'invalid_duration', __( 'Invalid duration. Please use a valid time format.', 'temporary-login-links-premium' ) );
+            $time = strtotime($duration);
+
+            if (false === $time || $time <= time()) {
+                return new WP_Error('invalid_duration', __('Invalid duration. Please use a valid time format.', 'temporary-login-links-premium'));
             }
-            
-            $expiry_date = gmdate( 'Y-m-d H:i:s', $time );
+
+            $expiry_date = date('Y-m-d H:i:s', $time);
         }
-        
+
         return $expiry_date;
     }
 

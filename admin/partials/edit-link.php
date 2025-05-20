@@ -126,12 +126,14 @@ if (!defined('WPINC')) {
                             </div>
                             
                             <div class="tlp-custom-expiry" style="<?php echo strpos($form_data['expiry'], 'custom_') === 0 ? 'display: block;' : 'display: none;'; ?>">
-                                <label for="custom_expiry_date"><?php esc_html_e('Custom Expiry Date and Time:', 'temporary-login-links-premium'); ?></label>
+                                <label for="custom_expiry_date"><?php esc_html_e('Custom Expiry Date:', 'temporary-login-links-premium'); ?></label>
                                 <div class="tlp-custom-expiry-inputs">
-                                    <input type="text" name="custom_expiry" id="custom_expiry" value="<?php echo esc_attr($form_data['custom_expiry']); ?>" class="tlp-datepicker" placeholder="YYYY-MM-DD HH:MM:SS">
+                                    <input type="text" name="custom_expiry" id="custom_expiry" value="<?php echo esc_attr($form_data['custom_expiry']); ?>" class="tlp-datepicker" placeholder="YYYY-MM-DD">
                                 </div>
-                                <p class="description"><?php esc_html_e('Set a specific date and time when the link will expire.', 'temporary-login-links-premium'); ?></p>
-                            </div>
+                                <p class="description"><?php esc_html_e('Set a specific date when the link will expire. The link will expire at the end of the selected day.', 'temporary-login-links-premium'); ?></p>
+                            </div>                            
+                            
+                            
                         </td>
                     </tr>
                     
@@ -313,20 +315,18 @@ if (!defined('WPINC')) {
     </div>
 </div>
 
-<!-- Date/Time Picker Initialization -->
+
 <script type="text/javascript">
 jQuery(document).ready(function($) {
-    // Initialize the datepicker
+    // Initialize the datepicker - remove time-related options
     if ($.fn.datepicker) {
-        $('#custom_expiry').datetimepicker({
+        $('#custom_expiry').datepicker({
             dateFormat: 'yy-mm-dd',
-            timeFormat: 'HH:mm:ss',
             changeMonth: true,
             changeYear: true,
             minDate: 0,
-            yearRange: 'c:c+10',
-            controlType: 'select',
-            oneLine: true
+            yearRange: 'c:c+10'
+            // Removed: timeFormat, showSecond, controlType, oneLine
         });
     }
     

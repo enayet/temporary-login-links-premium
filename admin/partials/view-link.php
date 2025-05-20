@@ -52,8 +52,6 @@ if (!defined('WPINC')) {
                 <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=activate&id=' . absint($link_id)), 'tlp_activate_link')); ?>" class="button"><?php echo esc_html__('Activate', 'temporary-login-links-premium'); ?></a>
                 <?php endif; ?>
                 
-                <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=extend&id=' . absint($link_id) . '&duration=7+days'), 'tlp_extend_link')); ?>" class="button"><?php echo esc_html__('Extend', 'temporary-login-links-premium'); ?></a>
-                
                 <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?page=temporary-login-links-premium-links&action=delete&id=' . absint($link_id)), 'tlp_delete_link')); ?>" class="button button-link-delete tlp-delete-link"><?php echo esc_html__('Delete', 'temporary-login-links-premium'); ?></a>
             </div>
         </div>
@@ -91,24 +89,17 @@ if (!defined('WPINC')) {
                     <th><?php echo esc_html__('Expiry Date', 'temporary-login-links-premium'); ?></th>
                     <td>
                         <?php 
-                        echo esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($link['expiry'])));
-                        
+                        // Show only the date part
+                        echo esc_html(date_i18n(get_option('date_format'), strtotime($link['expiry'])));
+
                         // Show time remaining if not expired
                         if (strtotime($link['expiry']) > time()) {
                             $time_diff = strtotime($link['expiry']) - time();
                             $days = floor($time_diff / (60 * 60 * 24));
-                            $hours = floor(($time_diff % (60 * 60 * 24)) / (60 * 60));
-                            
+
                             echo ' (';
-                            if ($days > 0) {
-                                /* translators: Days */
-                                echo esc_html(sprintf(_n('%d day', '%d days', $days, 'temporary-login-links-premium'), $days));
-                            }
-                            
-                            if ($hours > 0) {
-                                /* translators: Hours */
-                                echo esc_html(sprintf(_n('%d hour', '%d hours', $hours, 'temporary-login-links-premium'), $hours));
-                            }
+                            /* translators: Days */
+                            echo esc_html(sprintf(_n('%d day', '%d days', $days, 'temporary-login-links-premium'), $days));
                             echo ' ' . esc_html__('remaining', 'temporary-login-links-premium') . ')';
                         }
                         ?>

@@ -555,10 +555,10 @@ class TLP_Security {
                     
                 case 'date':
                     $value = sanitize_text_field($value);
-                    // Basic date validation (Y-m-d H:i:s)
-                    if (!empty($value) && !preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $value)) {
+                    // Basic date validation (Y-m-d)
+                    if (!empty($value) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
                         /* translators: Correct date format */
-                        $errors[] = sprintf(__('%s must be in the format YYYY-MM-DD HH:MM:SS.', 'temporary-login-links-premium'), $field['label']);
+                        $errors[] = sprintf(__('%s must be in the format YYYY-MM-DD.', 'temporary-login-links-premium'), $field['label']);
                     }
                     break;
                     
